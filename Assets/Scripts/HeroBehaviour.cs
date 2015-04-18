@@ -5,7 +5,9 @@ using System.Collections.Generic;
 
 public class HeroBehaviour : MonoBehaviour {
 
-	Slider lifeSlider;
+	public Slider heroHealth;
+	public int startingHealth = 100;
+	int life;
 	int cooldown;
 	int super_speed;
 	int speed;
@@ -21,7 +23,7 @@ public class HeroBehaviour : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Time.timeScale = 1;
-		life = ;
+		life = startingHealth;
 		cooldown = 200;
 		super_speed = 50;
 		speed = 20;
@@ -48,9 +50,9 @@ public class HeroBehaviour : MonoBehaviour {
 				last_attack = Time.time;
 			} 
 		}
-		else if (cooldown == 0)
+		else if (!hasSuperSpeed && (cooldown <= 0))
 			activateSpeed ();
-		else if (super_speed == 0) {
+		else if (hasSuperSpeed && (super_speed <= 0)) {
 			speed = 20;
 			hasSuperSpeed = false;
 		} else {
@@ -65,13 +67,12 @@ public class HeroBehaviour : MonoBehaviour {
 	}
 
 	void updateTime(){
-
-			cooldown--;
-			super_speed--;
-		
+		cooldown--;
+		super_speed--;		
 	}
 
 	void activateSpeed(){
+		Debug.Log ("Super Speed... ACTIVATE!!!");
 		speed = 80;
 		cooldown = 200;
 		super_speed = 50;
@@ -133,6 +134,7 @@ public class HeroBehaviour : MonoBehaviour {
 		int damage = Random.Range (1, 6);
 		if (life > 0) {
 			life -= damage;
+			heroHealth.value = life;
 			Debug.Log("Hero := Took " + damage + " damage!");
 		}else
 		{

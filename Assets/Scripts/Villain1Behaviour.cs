@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
 public class Villain1Behaviour : MonoBehaviour {
-	
+
+	public Slider villain1Health;
+	public int startingHealth = 60;
 	int life;
 	int speed;
 	float collision_time;
@@ -16,7 +19,7 @@ public class Villain1Behaviour : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Time.timeScale = 1;
-		life = 60;
+		life = startingHealth;
 		speed = 20;
 		collision_time = float.MaxValue;
 		last_attack = Time.time;
@@ -89,6 +92,7 @@ public class Villain1Behaviour : MonoBehaviour {
 		int damage = Random.Range (1, 11);
 		if (life > 0) {
 			life -= damage;
+			villain1Health.value = life;
 			Debug.Log("Villain := Took " + damage + " damage!");
 		}else
 		{
