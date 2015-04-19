@@ -61,7 +61,7 @@ public class Villain1Behaviour : MonoBehaviour {
 			collision_time = Time.time;
 		else if (collider.gameObject.tag == "Obstacle")
 			transform.Rotate (0, 180, 0);
-		else if (collider.gameObject.tag == "citizen")
+		else if (collider.gameObject.tag == "Citizen")
 			citizenCollision (collider);
 		else if (collider.gameObject == hero) {
 			Debug.Log ("Villain Attacks!!!");
@@ -72,6 +72,7 @@ public class Villain1Behaviour : MonoBehaviour {
 	
 	void citizenCollision(Collider collider)
 	{
+		Debug.Log ("Villain killed citizen!");
 		Destroy(collider.gameObject);
 	}
 		

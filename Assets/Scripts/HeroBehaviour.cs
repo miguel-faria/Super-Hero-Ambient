@@ -89,9 +89,9 @@ public class HeroBehaviour : MonoBehaviour {
 		Debug.Log ("HeroCollided");
 		if (collider.gameObject.tag == "Cross")
 			collision_time = Time.time;
-		else if (collider.gameObject.tag == "Obstacle")
+		else if (collider.gameObject.tag == "Obstacle") 
 			obstacleCollision ();
-		else if (collider.gameObject.tag == "citizen")
+		else if (collider.gameObject.tag == "Citizen")
 			citizenCollision (collider);
 		else if (collider.gameObject == villain) {
 			Debug.Log("Hero Attacks!!!");
@@ -102,9 +102,8 @@ public class HeroBehaviour : MonoBehaviour {
 
 	void citizenCollision(Collider collider)
 	{
+		Debug.Log ("Saved Citizen!");
 		Destroy(collider.gameObject);
-		//var score = GameObject.FindWithTag("scorebar");
-		//score.update();
 	}
 	
 	void obstacleCollision()
