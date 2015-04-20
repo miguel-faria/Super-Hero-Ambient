@@ -6,12 +6,16 @@ using System.Collections.Generic;
 public class HeroBehaviour : MonoBehaviour {
 
 	public Slider heroHealth;
+	public Text outputSavedCitizens;
+	public Text outputRemainingCitizens;
+	public int startingCitizens;
 	public int startingHealth = 100;
+	int savedCitizens;
+	int remainingCitizens;
 	int life;
 	int cooldown;
 	int super_speed;
 	int speed;
-	float timer;
 	float last_attack;
 	float collision_time;
 	bool hasSuperSpeed = false;
@@ -22,12 +26,13 @@ public class HeroBehaviour : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		savedCitizens = 0;
 		Time.timeScale = 1;
 		life = startingHealth;
+		remainingCitizens = startingCitizens;
 		cooldown = 200;
 		super_speed = 50;
 		speed = 20;
-		timer = 0f;
 		collision_time = float.MaxValue;
 		last_attack = Time.time;
 		/*for (int i = 0; i < 3; i++) {
@@ -37,6 +42,8 @@ public class HeroBehaviour : MonoBehaviour {
 		}*/
 		villain = GameObject.FindGameObjectWithTag ("Villain1");
 		villainBehaviour = villain.GetComponent<Villain1Behaviour> ();
+		outputSavedCitizens.text = "" + savedCitizens;
+		outputRemainingCitizens.text = "" + remainingCitizens;
 	}
 	
 	// Update is called once per frame
@@ -102,8 +109,13 @@ public class HeroBehaviour : MonoBehaviour {
 
 	void citizenCollision(Collider collider)
 	{
+		remainingCitizens--;
 		Debug.Log ("Saved Citizen!");
 		Destroy(collider.gameObject);
+		savedCitizens++;
+		villainBehaviour.updateCitizens (remainingCitizens);
+		outputSavedCitizens.text = "" + savedCitizens;
+		outputRemainingCitizens.text = "" + remainingCitizens;
 	}
 	
 	void obstacleCollision()
@@ -151,5 +163,9 @@ public class HeroBehaviour : MonoBehaviour {
 	
 	public void setInCombat(bool newInCombat){
 		inCombat = newInCombat;
+	}
+
+	public void updateCitizens(int citizens){
+		remainingCitizens = citizens;
 	}
 }

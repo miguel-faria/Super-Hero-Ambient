@@ -6,7 +6,12 @@ using System.Collections.Generic;
 public class Villain1Behaviour : MonoBehaviour {
 
 	public Slider villain1Health;
+	public Text outputKilledCitizens;
+	public Text outputRemainingCitizens;
+	public int startingCitizens;
 	public int startingHealth = 60;
+	int killedCitizens;
+	int remainingCitizens;
 	int life;
 	int speed;
 	float collision_time;
@@ -19,12 +24,15 @@ public class Villain1Behaviour : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Time.timeScale = 1;
+		killedCitizens = 0;
+		remainingCitizens = startingCitizens;
 		life = startingHealth;
 		speed = 20;
 		collision_time = float.MaxValue;
 		last_attack = Time.time;
 		hero = GameObject.FindGameObjectWithTag ("Hero");
 		heroBehaviour = hero.GetComponent<HeroBehaviour> ();
+		outputKilledCitizens.text = "" + killedCitizens;
 	}
 	
 	// Update is called once per frame
@@ -72,8 +80,13 @@ public class Villain1Behaviour : MonoBehaviour {
 	
 	void citizenCollision(Collider collider)
 	{
+		remainingCitizens--;
 		Debug.Log ("Villain killed citizen!");
 		Destroy(collider.gameObject);
+		killedCitizens++;
+		heroBehaviour.updateCitizens (remainingCitizens);
+		outputKilledCitizens.text = "" + killedCitizens;
+		outputRemainingCitizens.text = "" + remainingCitizens;
 	}
 		
 	void crossCollision()
@@ -111,5 +124,9 @@ public class Villain1Behaviour : MonoBehaviour {
 
 	public void setInCombat(bool newInCombat){
 		inCombat = newInCombat;
+	}
+
+	public void updateCitizens(int citizens){
+		remainingCitizens = citizens;
 	}
 }
