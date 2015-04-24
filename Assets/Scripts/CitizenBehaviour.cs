@@ -12,10 +12,12 @@ public class CitizenBehaviour : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (Time.time - collision_time > 0.20f)
-			crossCollision ();
-		else  
-			move ();
+		if (Time.timeScale > 0) {
+			if (Time.time - collision_time > 0.20f)
+				crossCollision ();
+			else  
+				move ();
+		}
 	}
 
 	void move()

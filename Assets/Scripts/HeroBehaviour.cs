@@ -9,10 +9,11 @@ public class HeroBehaviour : MonoBehaviour {
 	public Text outputSavedCitizens;
 	public Text outputRemainingCitizens;
 	public int startingCitizens;
-	public int startingHealth = 100;
+	public int startingHealth;
 	int savedCitizens;
 	int remainingCitizens;
 	int life;
+	int neededSaves;
 	int cooldown;
 	int super_speed;
 	int speed;
@@ -30,6 +31,7 @@ public class HeroBehaviour : MonoBehaviour {
 		Time.timeScale = 1;
 		life = startingHealth;
 		remainingCitizens = startingCitizens;
+		neededSaves = Mathf.RoundToInt (0.75f * startingCitizens);
 		cooldown = 200;
 		super_speed = 50;
 		speed = 20;
@@ -49,26 +51,26 @@ public class HeroBehaviour : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		updateTime ();
-
-		if (inCombat){
-			if ((Time.time - last_attack) > 1f) {
-				Debug.Log ("Hero Attacks!!!");
-				villainBehaviour.attacked ();
-				last_attack = Time.time;
-			} 
-		}
-		else if (!hasSuperSpeed && (cooldown <= 0))
-			activateSpeed ();
-		else if (hasSuperSpeed && (super_speed <= 0)) {
-			speed = 20;
-			hasSuperSpeed = false;
-		} else {
-			if (!hasSuperSpeed && (Time.time - collision_time > 0.20f))
-				crossCollision ();
-			else if (hasSuperSpeed && ((Time.time - collision_time) > 0.20f / 4))
-				crossCollision ();
-			else  
-				move ();
+		if (Time.timeScale > 0) {
+			if (inCombat) {
+				if ((Time.time - last_attack) > 1f) {
+					Debug.Log ("Hero Attacks!!!");
+					villainBehaviour.attacked ();
+					last_attack = Time.time;
+				} 
+			} else if (!hasSuperSpeed && (cooldown <= 0))
+				activateSpeed ();
+			else if (hasSuperSpeed && (super_speed <= 0)) {
+				speed = 20;
+				hasSuperSpeed = false;
+			} else {
+				if (!hasSuperSpeed && (Time.time - collision_time > 0.20f))
+					crossCollision ();
+				else if (hasSuperSpeed && ((Time.time - collision_time) > 0.20f / 4))
+					crossCollision ();
+				else  
+					move ();
+			}
 		}
 
 	}
@@ -93,7 +95,6 @@ public class HeroBehaviour : MonoBehaviour {
 	
 	void OnTriggerEnter(Collider collider)
 	{
-		Debug.Log ("HeroCollided");
 		if (collider.gameObject.tag == "Cross")
 			collision_time = Time.time;
 		else if (collider.gameObject.tag == "Obstacle") 
@@ -116,6 +117,10 @@ public class HeroBehaviour : MonoBehaviour {
 		villainBehaviour.updateCitizens (remainingCitizens);
 		outputSavedCitizens.text = "" + savedCitizens;
 		outputRemainingCitizens.text = "" + remainingCitizens;
+		if (savedCitizens >= neededSaves) {
+			Debug.Log("Hero Wins!!");
+			Time.timeScale = 0;
+		}
 	}
 	
 	void obstacleCollision()
@@ -131,7 +136,6 @@ public class HeroBehaviour : MonoBehaviour {
 		list.Add(270);
 		int directionIndex = Random.Range(0,3);
 		transform.Rotate(0, list[directionIndex], 0);
-		Debug.Log ("Hero Direction: " + list [directionIndex]);
 		collision_time = float.MaxValue;
 	}
 
@@ -142,7 +146,7 @@ public class HeroBehaviour : MonoBehaviour {
 
 	public void attacked()
 	{
-		int damage = Random.Range (1, 6);
+		int damage = Random.Range (1, 11);
 		if (life > 0) {
 			life -= damage;
 			heroHealth.value = life;
@@ -154,6 +158,8 @@ public class HeroBehaviour : MonoBehaviour {
 				villainBehaviour.setInCombat(false);
 			Debug.Log("I'm dead YO!!!!!!!!! - Hero");
 			Destroy(gameObject);
+			Debug.Log("Villain Wins!!");
+			Time.timeScale = 0;
 		}
 	}
 

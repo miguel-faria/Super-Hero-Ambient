@@ -9,9 +9,10 @@ public class Villain1Behaviour : MonoBehaviour {
 	public Text outputKilledCitizens;
 	public Text outputRemainingCitizens;
 	public int startingCitizens;
-	public int startingHealth = 60;
+	public int startingHealth;
 	int killedCitizens;
 	int remainingCitizens;
+	int neededSaves;
 	int life;
 	int speed;
 	float collision_time;
@@ -26,6 +27,7 @@ public class Villain1Behaviour : MonoBehaviour {
 		Time.timeScale = 1;
 		killedCitizens = 0;
 		remainingCitizens = startingCitizens;
+		neededSaves = Mathf.RoundToInt (0.75f * startingCitizens);
 		life = startingHealth;
 		speed = 20;
 		collision_time = float.MaxValue;
@@ -38,18 +40,18 @@ public class Villain1Behaviour : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		updateTime ();
-
-		if (inCombat){ 
-			if((Time.time - last_attack) > 1f) {
-				Debug.Log ("Villain Attacks!!!");
-				heroBehaviour.attacked ();
-				last_attack = Time.time;
-			}
+		if (Time.timeScale > 0) {
+			if (inCombat) { 
+				if ((Time.time - last_attack) > 1f) {
+					Debug.Log ("Villain Attacks!!!");
+					heroBehaviour.attacked ();
+					last_attack = Time.time;
+				}
+			} else if (Time.time - collision_time > 0.20f)
+				crossCollision ();
+			else 
+				move ();
 		}
-		else if (Time.time - collision_time > 0.20f)
-			crossCollision ();
-		else 
-			move ();
 		
 	}
 	
@@ -64,7 +66,6 @@ public class Villain1Behaviour : MonoBehaviour {
 	
 	void OnTriggerEnter(Collider collider)
 	{
-		Debug.Log ("Villain1 Collided");
 		if (collider.gameObject.tag == "Cross")
 			collision_time = Time.time;
 		else if (collider.gameObject.tag == "Obstacle")
@@ -87,6 +88,10 @@ public class Villain1Behaviour : MonoBehaviour {
 		heroBehaviour.updateCitizens (remainingCitizens);
 		outputKilledCitizens.text = "" + killedCitizens;
 		outputRemainingCitizens.text = "" + remainingCitizens;
+		if ((startingCitizens - killedCitizens) < neededSaves) {
+			Debug.Log("Villain Wins!!");
+			Time.timeScale = 0;
+		}
 	}
 		
 	void crossCollision()
@@ -97,7 +102,6 @@ public class Villain1Behaviour : MonoBehaviour {
 		list.Add(270);
 		int directionIndex = Random.Range(0,3);
 		transform.Rotate(0, list[directionIndex], 0);
-		Debug.Log ("Villain1 Direction: " + list [directionIndex]);
 		collision_time = float.MaxValue;
 	}
 
@@ -115,6 +119,8 @@ public class Villain1Behaviour : MonoBehaviour {
 				heroBehaviour.setInCombat(false);
 			Debug.Log("I'm dead YO!!!!!!!!! - Villain1");
 			Destroy(gameObject);
+			Debug.Log("Hero Wins!!");
+			Time.timeScale = 0;
 		}
 	}
 
