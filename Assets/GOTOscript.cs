@@ -7,15 +7,15 @@ public class GOTOscript : MonoBehaviour {
 	Animator anim;
 	NavMeshAgent agent;
 	AnimatorStateInfo state;
-	Transform *destinations;
+	//Transform *destinations;
 
 
 	void Start () 
 	{
-		destinations = GameObject.Find ("Destinations").GetComponentsInChildren (Transform);
+		//destinations = GameObject.Find ("Destinations").GetComponentsInChildren (Transform);
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
-		agent.SetDestination(destinations[1].position);
+		//agent.SetDestination(destinations[1].position);
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 	}
