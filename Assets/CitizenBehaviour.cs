@@ -49,7 +49,7 @@ public class CitizenBehaviour : MonoBehaviour {
 			return;
 		}
 		
-		if (state.IsName ("walk") && Time.time - time >= 1) {
+		if (state.IsName ("walk") && Time.time - time >= 2) {
 			agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
 			Debug.Log (agent.destination);
 			anim.SetBool ("isWalking", true);
