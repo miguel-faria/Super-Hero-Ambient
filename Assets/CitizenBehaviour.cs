@@ -10,12 +10,12 @@ public class CitizenBehaviour : MonoBehaviour {
 	Transform[] destinations;
 	float time;
 	float fieldOfViewAngle = 110f;
-
+	
 	//public delegate void CollisionAction();
 	//public event CollisionAction onCollision;
-
-	bool isFleeing;
-	float fleeTime;
+	
+	bool isRunning;
+	float runTime;
 	
 	void Start () 
 	{
@@ -41,14 +41,14 @@ public class CitizenBehaviour : MonoBehaviour {
 		state = anim.GetCurrentAnimatorStateInfo (0);
 		//Debug.Log(state.IsName("idle"));
 		//Debug.Log(agent.destination.Equals(GameObject.Find("Dest1").transform.position));
-
+		
 		if (state.IsName("idle")) {
 			agent.Resume();
 			agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
 			anim.SetBool("isWalking",true);
 			return;
 		}
-
+		
 		if (state.IsName ("walk") && Time.time - time >= 1) {
 			agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
 			Debug.Log (agent.destination);
@@ -72,8 +72,8 @@ public class CitizenBehaviour : MonoBehaviour {
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < fieldOfViewAngle * 0.5f) {
 				Debug.Log ("Villain colision");
-				isFleeing = true;
 
+	
 
 
 				if(onCollision != null)
@@ -84,4 +84,11 @@ public class CitizenBehaviour : MonoBehaviour {
 			}
 		}
 	}*/
+	
+	void Run()
+	{
+		isRunning = true;
+		runTime = Time.time;
+		agent.speed = 10;
+	}
 }
