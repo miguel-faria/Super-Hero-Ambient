@@ -7,6 +7,9 @@ TagManager:
   - Destination
   - Citizen
   - Villain
+  - FxTemporaire
+  - HUD
+  - Hero
   layers:
   - Default
   - TransparentFX
