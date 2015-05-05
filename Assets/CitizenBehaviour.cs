@@ -16,6 +16,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	
 	bool isRunning;
 	float runTime;
+
 	
 	void Start () 
 	{
