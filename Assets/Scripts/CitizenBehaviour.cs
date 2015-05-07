@@ -30,7 +30,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		
 		time = Time.time;
 		agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
-		Debug.Log (agent.destination);
+		//Debug.Log (agent.destination);
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 	}
@@ -52,7 +52,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		
 		if (state.IsName ("walk") && Time.time - time >= 2) {
 			agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
-			Debug.Log (agent.destination);
+//			Debug.Log (agent.destination);
 			anim.SetBool ("isWalking", true);
 			time = Time.time;
 			return;
@@ -61,17 +61,18 @@ public class CitizenBehaviour : MonoBehaviour {
 		
 	}
 	
-	/*void OnTriggerEnter (Collider other)
+	void OnTriggerEnter (Collider other)
 	{
 		Debug.Log ("seen a villain");
 		// If the player has entered the trigger sphere...
 		if (other.gameObject.CompareTag ("Villain")) {
 			// Create a vector from the enemy to the player and store the angle between it and forward.
 			Vector3 direction = other.transform.position - transform.position;
-			float angle = Vector3.Angle (direction, transform.forward);
+			//float angle = Vector3.Angle (direction, transform.forward);
+			agent.SetDestination(direction.normalized);
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
-			if (angle < fieldOfViewAngle * 0.5f) {
+			/*if (angle < fieldOfViewAngle * 0.5f) {
 				Debug.Log ("Villain colision");
 
 	
@@ -82,9 +83,26 @@ public class CitizenBehaviour : MonoBehaviour {
 				agent.SetDestination (other.gameObject.transform.position);
 				return;
 				
-			}
+			}*/
 		}
-	}*/
+	}
+
+
+	void OnTriggerStay (Collider other)
+	{
+		Debug.Log ("still running");
+
+		// If the player has entered the trigger sphere...
+		if (other.gameObject.CompareTag ("Villain")) {
+			// Create a vector from the enemy to the player and store the angle between it and forward.
+			Vector3 direction = transform.position - other.transform.position;
+			//float angle = Vector3.Angle (direction, transform.forward);
+			agent.SetDestination (direction.normalized);
+			
+			// If the angle between forward and where the player is, is less than half the angle of view...
+
+		}
+	}
 	
 	void Run()
 	{

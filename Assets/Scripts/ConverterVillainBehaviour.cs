@@ -28,7 +28,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		remainingCitizens = int.Parse (outputRemainingCitizens.text);
+		//remainingCitizens = int.Parse (outputRemainingCitizens.text);
 	}
 }
 

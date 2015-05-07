@@ -1,11 +1,10 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\ConverterVillainBehaviour.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\CitizenBehaviour.cs">
     <Files>
-      <File FileName="Assets\Scripts\ConverterVillainBehaviour.cs" Line="11" Column="24" />
-      <File FileName="Assets\Scripts\CitizenBehaviour.cs" Line="1" Column="1" />
-      <File FileName="Assets\JMO Assets\Cartoon FX\CartoonFX2 Readme.txt" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\GOTOscript.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\ConverterVillainBehaviour.cs" Line="35" Column="1" />
+      <File FileName="Assets\Scripts\CitizenBehaviour.cs" Line="108" Column="3" />
+      <File FileName="Assets\Scripts\GOTOscript.cs" Line="26" Column="5" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

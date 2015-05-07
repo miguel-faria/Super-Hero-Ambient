@@ -23,7 +23,7 @@ public class GOTOscript : MonoBehaviour {
 
 		time = Time.time;
 		agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
-		Debug.Log (agent.destination);
+		//Debug.Log (agent.destination);
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 	}
@@ -51,7 +51,7 @@ public class GOTOscript : MonoBehaviour {
 
 		if (state.IsName ("walk") && Time.time - time >= 5) {
 			agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
-			Debug.Log (agent.destination);
+//			Debug.Log (agent.destination);
 			anim.SetBool ("isWalking", true);
 			time = Time.time;
 			return;
@@ -78,4 +78,9 @@ public class GOTOscript : MonoBehaviour {
 			}
 		}
 	}
+
+
+
+
+
 }
