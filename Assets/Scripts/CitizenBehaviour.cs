@@ -10,14 +10,28 @@ public class CitizenBehaviour : MonoBehaviour {
 	Transform[] destinations;
 	float time;
 	float fieldOfViewAngle = 110f;
-	
-	//public delegate void CollisionAction();
-	//public event CollisionAction onCollision;
-	
-	bool isRunning;
+
+	public int life = 3;
+	public delegate void AttackedAction(GameObject gob);
+	public static event AttackedAction OnAttack;
+
+	int transformationState = 0;
+	bool isBeingAttacked = false;
+	bool isRunning = false;
 	float runTime;
 
+	void OnEnable()
+	{
+		OnAttack += RunFromScream;
+	}
 	
+	
+	void OnDisable()
+	{
+		OnAttack -= RunFromScream;
+	}
+	
+
 	void Start () 
 	{
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
@@ -53,6 +67,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		if (state.IsName ("walk") && Time.time - time >= 2) {
 			agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
 //			Debug.Log (agent.destination);
+			agent.speed = 3;
 			anim.SetBool ("isWalking", true);
 			time = Time.time;
 			return;
@@ -90,8 +105,6 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void OnTriggerStay (Collider other)
 	{
-		Debug.Log ("still running");
-
 		// If the player has entered the trigger sphere...
 		if (other.gameObject.CompareTag ("Villain")) {
 			// Create a vector from the enemy to the player and store the angle between it and forward.
@@ -103,11 +116,42 @@ public class CitizenBehaviour : MonoBehaviour {
 
 		}
 	}
+
+	// O Cidadao torna-se um minion se o seu estado e' igual a 5
+	public bool IsEvil()
+	{
+		return (transformationState == 5);
+	}
+
+	public void Transformed ()
+	{
+		Debug.Log ("Being transformed!!!");
+		if(transformationState < 5)
+			transformationState++;
+		if (OnAttack != null)
+			OnAttack (this.gameObject);
+	}
+
+	public void Attacked()
+	{
+		Debug.Log ("BEING ATTACKD!!!");
+		Debug.Log (life);
+		isBeingAttacked = true;
+		life--;
+		if (OnAttack != null)
+			OnAttack (this.gameObject);
+	}
 	
 	void Run()
 	{
 		isRunning = true;
 		runTime = Time.time;
-		agent.speed = 10;
+		agent.speed = 8;
 	}
+
+	void RunFromScream(GameObject citizen)
+	{
+		Debug.Log ("EVENT TRIGGERED!!");
+	}
+
 }
