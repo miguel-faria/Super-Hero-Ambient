@@ -14772,17 +14772,6 @@ GameObject:
 Transform:
   m_PrefabParentObject: {fileID: 400108, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
   m_PrefabInternal: {fileID: 1892422606}
---- !u!114 &172790106
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 172790104}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ada3a54056c42f048b2b309f33432d55, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!195 &172790107
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -17392,9 +17381,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 681792740}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ada3a54056c42f048b2b309f33432d55, type: 3}
+  m_Script: {fileID: 11500000, guid: d3e6679f428907c4fa5fd40b7479d4ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: {fileID: 1602211094}
+  outputSavedCitizens: {fileID: 13774115}
+  outputRemainingCitizens: {fileID: 1068862781}
+  startingLife: 100
+  startingCitizens: 20
 --- !u!195 &681792743
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -22943,7 +22937,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 100108, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
       propertyPath: m_TagString
-      value: Villain
+      value: Hero
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
