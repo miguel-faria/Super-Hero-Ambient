@@ -8,9 +8,9 @@ public class GOTOscript : MonoBehaviour {
 	NavMeshAgent agent;
 	AnimatorStateInfo state;
 	Transform[] destinations;
-	float time;
-	float citizenInViewTime = 0f;
-	float attackTime = 0f;
+	float time = 0f;
+	float citizenInViewTime = float.MaxValue;
+	float attackTime = float.MaxValue;
 	float fieldOfViewAngle = 110f;           // Number of degrees, centred on forward, for the enemy see.
 
 	Vector3 citizenPos = new Vector3();
@@ -38,7 +38,7 @@ public class GOTOscript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!citizenInView && !(Time.time - citizenInViewTime <= 1f)) {
+		if (!citizenInView && !(Time.time - citizenInViewTime >= 1f)) {
 			StopFollowing ();
 			return;
 		}
@@ -47,7 +47,7 @@ public class GOTOscript : MonoBehaviour {
 			Debug.Log ("killed");
 			return;
 		}
-		if ((citizenInView || Time.time - citizenInViewTime <= 1f) && !citizenSc.IsEvil() && !CitizenInRange ()) {
+		if ((citizenInView || Time.time - citizenInViewTime >= 1f) && !citizenSc.IsEvil() && !CitizenInRange ()) {
 			Follow ();
 			return;
 		}
@@ -112,6 +112,7 @@ public class GOTOscript : MonoBehaviour {
 	{
 		noPerception = true;
 		citizenSc = null;
+		time = float.MaxValue;
 	}
 
 	void Transform ()
