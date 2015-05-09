@@ -3,11 +3,12 @@ using System.Collections;
 
 public class Spawning : MonoBehaviour {
 
+	public int startingCitizens;
 
 	// Use this for initialization
 	void Start () {
 		GameObject citizen = GameObject.Find ("SpawningCitizen");
-		for (int i = 0; i < 20 ; i++) {
+		for (int i = 0; i < startingCitizens ; i++) {
 			Vector3 position = new Vector3(Random.Range(-1000f,1000f), 0, Random.Range(-1000f, 1000f));
 			NavMeshHit hit;
 			NavMesh.SamplePosition(position, out hit, 10, 1);

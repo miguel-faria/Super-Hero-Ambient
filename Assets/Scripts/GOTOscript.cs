@@ -118,7 +118,7 @@ public class GOTOscript : MonoBehaviour {
 	void Transform ()
 	{
 		if (Time.time - attackTime >= 1f) {
-			citizenSc.Transformed ();
+			citizenSc.Converted ();
 			UpdateAnimations (false, false, false, true, true);
 			attackTime = Time.time;
 		}

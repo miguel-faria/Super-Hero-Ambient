@@ -171,7 +171,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		return (transformationState == 5);
 	}
 
-	public void Transformed ()
+	public void Converted ()
 	{
 		Debug.Log ("Being transformed!!!");
 		if(transformationState < 5)
@@ -206,7 +206,7 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void HeardScream(GameObject citizen)
 	{
-		Debug.Log ("EVENT TRIGGERED!!");
+		Debug.Log ("Citizen - Scream event!!");
 		float distance = Vector3.Distance (transform.position, citizen.transform.position);
 		// In Hearing Range
 		if (distance <= 12 && !IsEvil ()) {

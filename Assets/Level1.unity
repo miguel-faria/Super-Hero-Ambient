@@ -14806,6 +14806,7 @@ MonoBehaviour:
   health: {fileID: 1967999358}
   outputConvertedCitizens: {fileID: 605046687}
   outputRemainingCitizens: {fileID: 1068862781}
+  inputKilledCitizens: {fileID: 0}
   startingLife: 100
 --- !u!135 &172790109
 SphereCollider:
@@ -17338,6 +17339,18 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!135 &681792744
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 681792740}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 8
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &681913296 stripped
 Transform:
   m_PrefabParentObject: {fileID: 400000, guid: d153a8045fa3a8143b860fc787040f99, type: 2}
@@ -23723,15 +23736,15 @@ Prefab:
     m_Modifications:
     - target: {fileID: 400108, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -16.8999996
+      value: -18
       objectReference: {fileID: 0}
     - target: {fileID: 400108, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -.0199999996
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400108, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 56.1800003
+      value: 55.5
       objectReference: {fileID: 0}
     - target: {fileID: 400108, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
       propertyPath: m_LocalRotation.x
@@ -24230,6 +24243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 852404b385f8ba74badbe87ff87c9ffa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startingCitizens: 20
 --- !u!4 &2076790110
 Transform:
   m_ObjectHideFlags: 0

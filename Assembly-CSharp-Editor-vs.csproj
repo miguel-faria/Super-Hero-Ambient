@@ -5,7 +5,7 @@
 	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 	<ProductVersion>10.0.20506</ProductVersion>
 	<SchemaVersion>2.0</SchemaVersion>
-	<ProjectGuid>{2C9D1011-CBD4-3AFA-E833-5010A5B713F8}</ProjectGuid>
+	<ProjectGuid>{77B0F577-96B6-E9CA-A992-B52C6B1A9C47}</ProjectGuid>
 	<OutputType>Library</OutputType>
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<RootNamespace></RootNamespace>
@@ -65,7 +65,7 @@
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders\CFX2 Particle Alpha Blend Tint.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\CartoonFX2 Readme.txt" />
  <Reference Include="Assembly-UnityScript-firstpass">
- <HintPath>C:/Users/Joana/git/Super Heroes/Library/ScriptAssemblies/Assembly-UnityScript-firstpass.dll</HintPath>
+ <HintPath>C:/Users/Miguel/Documents/GitHub/Super-Hero-Ambient/Library/ScriptAssemblies/Assembly-UnityScript-firstpass.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
@@ -109,7 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp-vs.csproj">
-      <Project>{DF99967D-833A-681E-BD85-F9A33B20E5E7}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
+      <Project>{13C0455D-6276-78DD-9EBB-835B8C91A270}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
