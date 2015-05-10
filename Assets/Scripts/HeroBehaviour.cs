@@ -46,4 +46,21 @@ public class HeroBehaviour : MonoBehaviour {
 	void Update () {
 	
 	}
+
+	public void Attacked(GameObject attacker) {
+
+		int damage = Random.Range (1, 6);
+		if (life > 0) {
+			life -= damage;
+			health.value = life;
+			Debug.Log("Hero := Took " + damage + " damage!");
+		}else
+		{
+			inCombat = false;
+
+			Debug.Log("I'm dead YO!!!!!!!!! - Hero");
+			Destroy(gameObject);
+		}
+
+	}
 }

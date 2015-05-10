@@ -91,7 +91,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	
 	void OnTriggerEnter (Collider other)
 	{
-		Debug.Log ("seen a villain");
+		//Debug.Log ("seen a villain");
 		// If the player has entered the trigger sphere...
 		if (other.gameObject.CompareTag ("Villain") && !IsEvil ()) {
 			// Create a vector from the enemy to the player and store the angle between it and forward.
@@ -100,7 +100,7 @@ public class CitizenBehaviour : MonoBehaviour {
 
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < fieldOfViewAngle * 0.5f) {
-				Debug.Log ("Villain colision");
+				//Debug.Log ("Villain colision");
 				isRunningFromVillain = true;
 				return;
 				
@@ -131,7 +131,7 @@ public class CitizenBehaviour : MonoBehaviour {
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < fieldOfViewAngle * 0.5f) {
-				Debug.Log ("Villain colision");
+				//Debug.Log ("Villain colision");
 				isRunningFromVillain = true;
 				return;
 				
@@ -173,7 +173,7 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	public void Converted ()
 	{
-		Debug.Log ("Being transformed!!!");
+		//Debug.Log ("Being transformed!!!");
 		if(transformationState < 5)
 			transformationState++;
 		if (OnAttack != null)
@@ -182,8 +182,8 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	public void Attacked()
 	{
-		Debug.Log ("BEING ATTACKED!!!");
-		Debug.Log (life);
+		//Debug.Log ("BEING ATTACKED!!!");
+		//Debug.Log (life);
 		isBeingAttacked = true;
 		life--;
 		if (OnAttack != null)
@@ -206,7 +206,7 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void HeardScream(GameObject citizen)
 	{
-		Debug.Log ("Citizen - Scream event!!");
+		//Debug.Log ("Citizen - Scream event!!");
 		float distance = Vector3.Distance (transform.position, citizen.transform.position);
 		// In Hearing Range
 		if (distance <= 12 && !IsEvil ()) {

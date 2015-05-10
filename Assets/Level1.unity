@@ -14798,7 +14798,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 172790104}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b389b19c480ec634893f9f95c4b2477e, type: 3}
   m_Name: 
@@ -14806,7 +14806,7 @@ MonoBehaviour:
   health: {fileID: 1967999358}
   outputConvertedCitizens: {fileID: 605046687}
   outputRemainingCitizens: {fileID: 1068862781}
-  inputKilledCitizens: {fileID: 0}
+  inputKilledCitizens: {fileID: 579538506}
   startingLife: 100
 --- !u!135 &172790109
 SphereCollider:
@@ -14833,17 +14833,6 @@ CapsuleCollider:
   m_Height: 4
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &172790111
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 172790104}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ada3a54056c42f048b2b309f33432d55, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!54 &172790112
 Rigidbody:
   m_ObjectHideFlags: 0

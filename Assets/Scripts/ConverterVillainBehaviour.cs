@@ -15,7 +15,7 @@ class Perception{
 	GameObject _objectPercepted;
 	int _type;
 
-	Perception(GameObject perception, int type){
+	public Perception(GameObject perception, int type){
 		_objectPercepted = perception;
 		_type = type;
 		_tag = _objectPercepted.tag;
@@ -326,6 +326,33 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	List<Desire> desires = new List<Desire>();
 	Intention intention;
 
+	public bool IsFollowing {
+		get {
+			return isFollowing;
+		}
+		set {
+			isFollowing = value;
+		}
+	}
+
+	public bool InCombat {
+		get {
+			return inCombat;
+		}
+		set {
+			inCombat = value;
+		}
+	}
+
+	public bool IsAlive {
+		get {
+			return isAlive;
+		}
+		set {
+			isAlive = value;
+		}
+	}
+
 	void onEnable(){
 		CitizenBehaviour.OnAttack += HeardScream;
 	}
@@ -343,6 +370,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		isAlive = true;
 		inCombat = false;
 		convertedCitizens = 0;
+		inputKilledCitizens.text = "" + 0;
 		killedCitizens = int.Parse(inputKilledCitizens.text);
 		outputConvertedCitizens.text = "" + convertedCitizens;
 		hero = GameObject.FindGameObjectWithTag ("Hero");
@@ -398,10 +426,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			executeIntention(intention);
 		}
 
-		updateAnimation (intention.IntentObject);
+		//updateAnimation (intention.IntentObject);
 	}
 
-	void updateAnimation (GameObject destinationObject)
+	/*void updateAnimation (GameObject destinationObject)
 	{
 		if (!citizenInView && !(Time.time - citizenInViewTime >= 1f)) {
 			StopFollowing ();
@@ -440,7 +468,12 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			anim.SetBool("isWalking",true);
 			return;
 		}
-	}
+	}*/
+
+
+	/***********************************************************************
+	 ********************** BDI Architechture Methods **********************
+	 ***********************************************************************/
 
 	void executeIntention(Intention intention){
 		Debug.Log ("Executing Intention: " + intention.Description);
@@ -449,23 +482,33 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			return;
 		}
 
-		if (intention.Type == (int)intentionTypes.Attack) {
+		if (intention.Type == (int)intentionTypes.Move && desires != null){
+			Debug.Log("Concluded Move Randomly");
+			intention.Concluded = true;
+			return;
+		}
 
+		if (intention.Type == (int)intentionTypes.Attack) {
+			Attack(hero);
 		} else if (intention.Type == (int)intentionTypes.Convert) {
 			citizenSc = (CitizenBehaviour) intention.IntentObject.GetComponent(typeof(CitizenBehaviour));
 			citizenPos = intention.IntentObject.transform.position;
 			if(CitizenInRange())
 				Convert();
 			else
-				Follow();
+				Follow(citizenPos);
 		} else if (intention.Type == (int)intentionTypes.Flee) {
 			if(!HeroInRange()){
 				intention.Concluded = true;
 				StopFollowing();
 			}
+			else{
+				Vector3 objective = hero.transform.position - transform.position;
+				Follow(objective.normalized);
+			}
 		} else if (intention.Type == (int)intentionTypes.Follow) {
-			citizenPos = intention.IntentObject.transform.position;
-			Follow();
+			followedObject = intention.IntentObject;
+			Follow(followedObject.transform.position);
 		} else if (intention.Type == (int)intentionTypes.Move) {
 			RandomWalk();
 		} else {
@@ -560,7 +603,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			}
 		}
 		else{
-			GameObject dest = destinations [Random(0, destinations.Length)].gameObject;
+			GameObject dest = destinations [Random.Range(0, destinations.Length)].gameObject;
 			newIntention = new Intention((int)intentionTypes.Move, "Move Randomly", dest,
 			                             Vector3.Distance(this.transform.position, dest.transform.position));
 		}
@@ -637,6 +680,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		return false;
 	}
 
+	/***************************************************************
+	 ************************* Sensor Methods **********************
+	 ***************************************************************/
+
 	bool HeroInRange(){
 		return ((Vector3.Distance(this.transform.position, hero.transform.position) < 30.0f) &&
 		        (!InSightHero(this.gameObject)));
@@ -673,68 +720,6 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		return false;
 	}
 	
-	void KilledCitizen ()
-	{
-		// Laugh
-		agent.Stop();
-		anim.SetTrigger ("Laugh");
-		anim.SetBool("isWalking",false);
-		
-		citizenInView = false;
-		noPerception = true;
-		citizenSc = null;
-		UpdateAnimations (false, false, false, true, false);
-	}
-	
-	
-	void StopFollowing()
-	{
-		noPerception = true;
-		citizenSc = null;
-		time = float.MaxValue;
-	}
-	
-	void Convert ()
-	{
-		if (Time.time - attackTime >= 1f) {
-			citizenSc.Converted ();
-			UpdateAnimations (false, false, false, true, true);
-			attackTime = Time.time;
-		}
-	}
-	
-	void Attack()
-	{
-		if (Time.time - attackTime >= 1f) {
-			Debug.Log ("attacking");
-			UpdateAnimations (false, false, true, true, false);
-			citizenSc.Attacked ();
-			attackTime = Time.time;
-		}
-	}
-	
-	void StopAttacking() 
-	{
-		UpdateAnimations (false, false, false, true, false);
-	}
-	
-	void Follow()
-	{
-		agent.Resume();
-		agent.SetDestination (citizenPos);
-		agent.speed = 8;
-		UpdateAnimations (true, false, false, true, false);
-	}
-	
-	void RandomWalk()
-	{
-		agent.Resume();
-		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
-		agent.speed = 3.5f;
-		UpdateAnimations (true, false, false, true, false);
-		time = Time.time;
-	}
-
 	bool inSight(GameObject other){
 		// Create a vector from the enemy to the player and store the angle between it and forward.
 		Vector3 direction = other.transform.position - this.transform.position;
@@ -753,10 +738,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				return true;
 			}
 		}
-
+		
 		return false;
 	}
-
+	
 	bool isTouching(GameObject other){
 		float distance = Vector3.Distance (this.transform.position, other.transform.position);
 		if (distance <= 1.5f && distance >= 0.0f){
@@ -765,22 +750,78 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		return false;
 	}
 
-	void OnTriggerStay(Collider other)
+
+	/***************************************************************
+	 ************************ Actuator Methods *********************
+	 ***************************************************************/
+	void KilledCitizen ()
 	{
-		if (other.gameObject.CompareTag ("Citizen")) {
-			// Create a vector from the enemy to the player and store the angle between it and forward.
-			Vector3 direction = other.transform.position - transform.position;
-			float angle = Vector3.Angle (direction, transform.forward);
-			
-			// If the angle between forward and where the player is, is less than half the angle of view...
-			if (angle < fieldOfViewAngle * 0.5f) {
-				Transform citizen = other.gameObject.transform;
-				citizenPos.Set (citizen.position.x, citizen.position.y, citizen.position.z);
-				return;
-			}
+		// Laugh
+		agent.Stop();
+		anim.SetTrigger ("Laugh");
+		anim.SetBool("isWalking",false);
+		
+		citizenInView = false;
+		noPerception = true;
+		citizenSc = null;
+		UpdateAnimations (false, false, false, true, false);
+	}
+	
+	
+	void StopFollowing()
+	{
+		noPerception = true;
+		if (followedObject.CompareTag ("Citizen"))
+			citizenSc = null;
+		followedObject = null;
+		time = float.MaxValue;
+	}
+	
+	void Convert ()
+	{
+		if (Time.time - attackTime >= 1f) {
+			citizenSc.Converted ();
+			UpdateAnimations (false, false, false, true, true);
+			attackTime = Time.time;
 		}
 	}
-
+	
+	void Attack(GameObject attacked)
+	{
+		if (Time.time - attackTime >= 1f) {
+			Debug.Log ("attacking");
+			UpdateAnimations (false, false, true, true, false);
+			if(attacked.CompareTag("Citizen")){
+				citizenSc.Attacked ();
+			}else if(attacked.CompareTag("Hero")){
+				heroBehaviour.Attacked(this.gameObject);
+			}
+			attackTime = Time.time;
+		}
+	}
+	
+	void StopAttacking() 
+	{
+		UpdateAnimations (false, false, false, true, false);
+	}
+	
+	void Follow(Vector3 destinationPos)
+	{
+		agent.Resume();
+		agent.SetDestination (destinationPos);
+		agent.speed = 8;
+		UpdateAnimations (true, false, false, true, false);
+	}
+	
+	void RandomWalk()
+	{
+		agent.Resume();
+		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
+		agent.speed = 3.5f;
+		UpdateAnimations (true, false, false, true, false);
+		time = Time.time;
+	}
+	
 	void HeardScream(GameObject screamer){
 		Debug.Log ("Converter Villain - Event Scream!!");
 		float distance = Vector3.Distance (this.transform.position, screamer.transform.position);
@@ -789,11 +830,27 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 	}
 
-	void OnTriggerExit(Collider other)
-	{
-		citizenInViewTime = Time.time;
-		citizenInView = false;
-	}
+//	void OnTriggerStay(Collider other)
+//	{
+//		if (other.gameObject.CompareTag ("Citizen")) {
+//			// Create a vector from the enemy to the player and store the angle between it and forward.
+//			Vector3 direction = other.transform.position - transform.position;
+//			float angle = Vector3.Angle (direction, transform.forward);
+//			
+//			// If the angle between forward and where the player is, is less than half the angle of view...
+//			if (angle < fieldOfViewAngle * 0.5f) {
+//				Transform citizen = other.gameObject.transform;
+//				citizenPos.Set (citizen.position.x, citizen.position.y, citizen.position.z);
+//				return;
+//			}
+//		}
+//	}
+//
+//	void OnTriggerExit(Collider other)
+//	{
+//		citizenInViewTime = Time.time;
+//		citizenInView = false;
+//	}
 
 	void UpdateAnimations(bool walking, bool laughing, bool combat, bool alive, bool convert)
 	{
