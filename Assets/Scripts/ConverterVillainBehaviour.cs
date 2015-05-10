@@ -338,6 +338,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	float citizenInViewTime;
 	float convertTime;
 	float attackTime;
+	float askForHelpTime;
 
 	Animator anim;
 	NavMeshAgent agent;
@@ -349,6 +350,11 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	List<Desire> desires = new List<Desire>();
 	Intention intention;
 
+	//Event Methods
+	public delegate void AskForHelp(GameObject asker);
+	public static event AskForHelp OnAskHelp;
+
+	//Getters and Setters
 	public bool IsFollowing {
 		get {
 			return isFollowing;
@@ -436,6 +442,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		citizenInViewTime = float.MaxValue;
 		convertTime = float.MinValue;
 		attackTime = float.MinValue;
+		askForHelpTime = float.MinValue;
 	}
 	
 	// Update is called once per frame
@@ -508,6 +515,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		Debug.Log ("Executing Intention: " + intention.Description);
 		if (intention.IntentObject == null) {
 			intention.Possible = false;
+			intention.DistanceToDestination = float.MaxValue;
 			return;
 		}
 
@@ -574,6 +582,38 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			}else{
 				followedObject = intention.IntentObject;
 				Follow(followedObject.transform.position);
+			}
+		} else if(intention.Type == (int)intentionTypes.KillHero) { 
+			if(HeroIsDead()){
+				intention.Concluded = true;
+				intention.DistanceToDestination = float.MaxValue;
+				if(inCombat)
+					inCombat = false;
+			} else if(HeroInAttackRange()){
+				Attack(hero);
+				inCombat = true;
+			}else{
+				followedObject = intention.IntentObject;
+				Follow(followedObject.transform.position);
+			}
+		} else if(intention.Type == (int)intentionTypes.AskHelp) { 
+			if (!HeroInRange ()) {
+				intention.Concluded = true;
+				intention.DistanceToDestination = float.MaxValue;
+				StopFollowing ();
+			} else if (HeroIsDead ()) {
+				intention.Possible = false;
+				intention.DistanceToDestination = float.MaxValue;
+				StopFollowing ();
+			} else {
+				if((OnAskHelp != null) && ((Time.time - askForHelpTime) > 0.5f)){
+					OnAskHelp(this.gameObject);
+					askForHelpTime = Time.time;
+				}
+				Vector3 objective = hero.transform.position - transform.position;
+				Follow (objective.normalized);
+				if(inCombat)
+					inCombat = false;
 			}
 		} else if (intention.Type == (int)intentionTypes.Move) {
 			if (intention.Type == (int)intentionTypes.Move && desires != null){
@@ -672,7 +712,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 		if (desires != null) {
 			if (!inCombat && ((remainingCitizens + convertedCitizens + killedCitizens) < (Mathf.FloorToInt (0.4f * heroBehaviour.startingCitizens)))
-				&& (existsBelief<SeeHeroBelief> ((int)beliefTypes.See, beliefs))) {
+				&& (existsBelief<SeeHeroBelief> ((int)beliefTypes.See, beliefs)) && !HeroIsDead()) {
 				newIntention = new Intention ((int)intentionTypes.KillHero, "Kill the Hero", hero,
 				                              Vector3.Distance (currentPosition, hero.transform.position));
 			} else if (inCombat && (life < 40) && existsDesire ((int)desireTypes.Flee, desires) && (hero != null)) {
@@ -786,16 +826,19 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 	bool HeroInRange(){
 		return ((Vector3.Distance(this.transform.position, hero.transform.position) < 30.0f) &&
-		        (!InSightHero(this.gameObject)));
+		        (!InSightOfHero(this.gameObject)));
 	}
 
-	bool InSightHero(GameObject other){
+	bool HeroInAttackRange(){
+		return isTouching(hero);
+	}
+
+	bool InSightOfHero(GameObject other){
 		float distance = Vector3.Distance (hero.transform.position, other.transform.position);
 		Vector3 direction = other.transform.position - this.transform.position;
 		float angle = Vector3.Angle (direction, this.transform.forward);	
 		// If the angle between forward and where the player is, is less than half the angle of view...
 		if (distance < 35.0f && angle < fieldOfViewAngle * 0.5f) {
-			Debug.Log ("Saw Citizen");
 			return true;
 		} else {
 			return false;
@@ -929,7 +972,22 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			attackTime = Time.time;
 		}
 	}
-	
+
+	public void Attacked(){
+		int damage = Random.Range (1, 11);
+		if (life > 0) {
+			life -= damage;
+			health.value = life;
+			Debug.Log("Darth Vader := Took " + damage + " damage!");
+		}else {
+			inCombat = false;
+			if(heroBehaviour.InCombat)
+				heroBehaviour.InCombat = false;;
+			Debug.Log("I'm dead YO!!!!!!!!! - Darth Vader");
+			Destroy(gameObject);
+		}
+	}
+
 	void StopAttacking() 
 	{
 		UpdateAnimations (false, false, false, true, false);

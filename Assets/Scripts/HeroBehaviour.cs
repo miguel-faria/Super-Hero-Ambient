@@ -30,12 +30,23 @@ public class HeroBehaviour : MonoBehaviour {
 	AnimatorStateInfo state;
 	Transform[] destinations;
 
+
+	//Getters and Setters
 	public int Life {
 		get {
 			return life;
 		}
 		set {
 			life = value;
+		}
+	}
+
+	public bool InCombat {
+		get {
+			return inCombat;
+		}
+		set {
+			inCombat = value;
 		}
 	}
 
@@ -63,8 +74,7 @@ public class HeroBehaviour : MonoBehaviour {
 			life -= damage;
 			health.value = life;
 			Debug.Log("Hero := Took " + damage + " damage!");
-		}else
-		{
+		}else {
 			inCombat = false;
 
 			Debug.Log("I'm dead YO!!!!!!!!! - Hero");
