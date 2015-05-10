@@ -11,7 +11,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	float time = 0f;
 	float fieldOfViewAngle = 110f;
 
-	public int life = 3;
+	int life = 3;
 	public delegate void AttackedAction(GameObject gob);
 	public static event AttackedAction OnAttack;
 
@@ -30,6 +30,15 @@ public class CitizenBehaviour : MonoBehaviour {
 	int transformationState = 0;
 	bool heroSeen = false;
 	Vector3 heroPosition = new Vector3();
+
+	public int Life {
+		get {
+			return life;
+		}
+		set {
+			life = value;
+		}
+	}
 
 	void OnEnable()
 	{

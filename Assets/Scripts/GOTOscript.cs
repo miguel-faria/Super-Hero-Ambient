@@ -89,7 +89,7 @@ public class GOTOscript : MonoBehaviour {
 
 	bool CitizenIsDead ()
 	{
-	  if (citizenSc.life <= 0)
+	  if (citizenSc.Life <= 0)
 			return true;
 		return false;
 	}

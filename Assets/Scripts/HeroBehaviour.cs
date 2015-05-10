@@ -30,6 +30,15 @@ public class HeroBehaviour : MonoBehaviour {
 	AnimatorStateInfo state;
 	Transform[] destinations;
 
+	public int Life {
+		get {
+			return life;
+		}
+		set {
+			life = value;
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
 	
