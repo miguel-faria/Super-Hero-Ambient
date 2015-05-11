@@ -64,7 +64,6 @@ public class CitizenBehaviour : MonoBehaviour {
 		
 		time = Time.time;
 		agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
-		Debug.Log (agent.destination);
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 		transformationState = 0;
@@ -104,14 +103,12 @@ public class CitizenBehaviour : MonoBehaviour {
 
 		// If the player has entered the trigger sphere...
 		if (other.gameObject.CompareTag ("Villain") && !IsEvil ()) {
-			Debug.Log ("Saw a Villain");
 			// Create a vector from the enemy to the player and store the angle between it and forward.
 			direction = other.transform.position - transform.position;
 			float angle = Vector3.Angle (direction, transform.forward);
 
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < fieldOfViewAngle * 0.5f) {
-				Debug.Log ("Villain colision");
 				isRunningFromVillain = true;
 				return;
 				
@@ -119,14 +116,12 @@ public class CitizenBehaviour : MonoBehaviour {
 		}
 
 		if (other.gameObject.CompareTag ("Hero") && IsEvil ()) {
-			Debug.Log ("Saw the Hero");
 			// Create a vector from the enemy to the player and store the angle between it and forward.
 			heroPosition = other.transform.position - transform.position;
 			float angle = Vector3.Angle (heroPosition, transform.forward);
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < fieldOfViewAngle * 0.5f) {
-				Debug.Log ("Hero colision");
 				heroSeen = true;
 				return;	
 			}
@@ -144,7 +139,6 @@ public class CitizenBehaviour : MonoBehaviour {
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < fieldOfViewAngle * 0.5f) {
-				Debug.Log ("Villain colision");
 				isRunningFromVillain = true;
 				return;
 				
@@ -157,7 +151,6 @@ public class CitizenBehaviour : MonoBehaviour {
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < fieldOfViewAngle * 0.5f) {
-				Debug.Log ("Hero colision");
 				heroSeen = true;
 				return;	
 			}
@@ -198,7 +191,6 @@ public class CitizenBehaviour : MonoBehaviour {
 	public void Attacked()
 	{
 		Debug.Log ("BEING ATTACKED!!!");
-		Debug.Log (life);
 		isBeingAttacked = true;
 		life--;
 		if (OnAttack != null)
@@ -221,7 +213,6 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void HeardScream(GameObject citizen)
 	{
-		Debug.Log ("Citizen - Scream event!!");
 		float distance = Vector3.Distance (transform.position, citizen.transform.position);
 		// In Hearing Range
 		if (distance <= 12 && !IsEvil ()) {
