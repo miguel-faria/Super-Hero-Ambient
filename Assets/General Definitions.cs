@@ -5,6 +5,10 @@ using System.Collections.Generic;
 
 namespace SuperHeroAmbient{
 
+	class Definitions{
+		public const float TASKFOCUSTIME = 10f;
+	}
+	
 	//Utility classes
 	class Perception{
 		
@@ -90,7 +94,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _citizenPosition;
 		
-		public SeeCitizenBelief(GameObject citizen) : base ((int)beliefTypes.See, "Saw Citizen", citizen){
+		public SeeCitizenBelief(GameObject citizen) : base ((int)coverterBeliefTypes.See, "Saw Citizen", citizen){
 			_citizenPosition = citizen.transform.position;
 		}
 		
@@ -108,7 +112,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _screamOrigin;
 		
-		public HearScreamBelief (GameObject screamer, Vector3 screamOrigin) : base((int)beliefTypes.Hear, "Heard a Scream", screamer) {
+		public HearScreamBelief (GameObject screamer, Vector3 screamOrigin) : base((int)coverterBeliefTypes.Hear, "Heard a Scream", screamer) {
 			_screamOrigin = screamOrigin;
 		}
 		
@@ -126,7 +130,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _heroPosition;
 		
-		public SeeHeroBelief (GameObject hero): base((int)beliefTypes.See, "Saw the Hero", hero){
+		public SeeHeroBelief (GameObject hero): base((int)coverterBeliefTypes.See, "Saw the Hero", hero){
 			_heroPosition = hero.transform.position;
 		}
 		
@@ -144,7 +148,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _heroPosition;
 		
-		public TouchHeroBelief (GameObject hero): base((int)beliefTypes.Touching, "Touch the Hero", hero){
+		public TouchHeroBelief (GameObject hero): base((int)coverterBeliefTypes.Touching, "Touch the Hero", hero){
 			_heroPosition = hero.transform.position;
 		}
 		

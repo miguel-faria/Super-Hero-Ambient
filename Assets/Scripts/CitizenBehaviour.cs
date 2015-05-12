@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using SuperHeroAmbient;
 
 public class CitizenBehaviour : MonoBehaviour {
 	

@@ -66,6 +66,8 @@
      <Compile Include="Assets\Scripts\HeroBehaviour.cs" />
      <Compile Include="Assets\Scripts\IdleRunJump.cs" />
      <Compile Include="Assets\Scripts\Spawning.cs" />
+     <Compile Include="Assets\StrikerVillainBehaviour.cs" />
+     <Compile Include="Assets\VillainBehaviour.cs" />
      <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Basic.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders\CFX3 Multiply Color.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders (Mobile)\CFXM_MobileParticleAdd_Alpha8.shader" />

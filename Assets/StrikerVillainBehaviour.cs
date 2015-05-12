@@ -1,60 +1,46 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using SuperHeroAmbient;
 
-enum perceptionType {Saw, Heard, Touched}
-enum beliefTypes {See, Hear, Touching}
-enum desireTypes {Save, Follow, Fight, Flee}
-enum intentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
-
-public class HeroBehaviour : MonoBehaviour {
-
+public class StrikerVillainBehaviour : MonoBehaviour
+{
 	public Slider health;
-	public Text outputSavedCitizens;
+	public Text outputKilledCitizens;
 	public Text outputRemainingCitizens;
-	public Text inputKilledCitizens;
 	public Text inputConvertedCitizens;
 	public int startingLife;
-	public int startingCitizens;
-	int remainingCitizens;
-	int savedCitizens;
+	int life;
 	int killedCitizens;
 	int convertedCitizens;
-	int life;
+	int remainingCitizens;
+	bool isAlive;
+	bool inCombat;
+	bool isFollowing;
+	bool updatedIntention;
 	float lastDecisionTime;
 	float time;
+	float citizenInViewTime;
+	float convertTime;
 	float attackTime;
-	float fieldOfViewAngle = 110f;           // Number of degrees, centred on forward, for the enemy see.
-	bool isFollowing;
-	bool inCombat;
-	bool isAlive;
-	bool updatedIntention;
-	
+	float askForHelpTime;
+
 	Animator anim;
 	NavMeshAgent agent;
 	AnimatorStateInfo state;
 	Transform[] destinations;
-	
-	GameObject followedObject;
+
 	GameObject hero;
 	HeroBehaviour heroBehaviour;
+	GameObject[] citizens;
+	CitizenBehaviour citizenSc;
+	GameObject followedObject;
 
 	List<Perception> screamPerceps = new List<Perception>();
 	List<Belief> beliefs = new List<Belief>();
 	List<Desire> desires = new List<Desire>();
 	Intention intention;
-
-	//Getters and Setters
-	public int Life {
-		get {
-			return life;
-		}
-		set {
-			life = value;
-		}
-	}
 
 	public bool InCombat {
 		get {
@@ -66,22 +52,60 @@ public class HeroBehaviour : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	void Start () {
-	
-		outputRemainingCitizens.text = "" + startingCitizens;
-		health.value = startingLife;
+	void Start ()
+	{
+		Time.timeScale = 1;
 		life = startingLife;
-		remainingCitizens = startingCitizens;
-		savedCitizens = 0;
-		outputSavedCitizens.text = "" + savedCitizens;
+		health.value = startingLife;
+		isAlive = true;
+		inCombat = false;
+		killedCitizens = 0;
+		outputKilledCitizens.text = "" + killedCitizens;
+		hero = GameObject.FindGameObjectWithTag ("Hero");
+		heroBehaviour = hero.GetComponent<HeroBehaviour> ();
+		anim = GetComponent<Animator> ();
+		agent = GetComponent<NavMeshAgent>();
+		convertedCitizens = int.Parse(inputConvertedCitizens.text);
+		
+		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
+		citizens = GameObject.FindGameObjectsWithTag ("Citizen");
+		
+		int objLength = objects.Length;
+		destinations = new Transform[objLength];
+		for (int i = 0; i < objLength; i++)
+			destinations [i] = objects [i].transform ;
+		
+		float min_dist = float.MaxValue;
+		int index = 0;
+		
+		for (int i = 0; i < destinations.Length; i++) {
+			if (destinations [i].position.magnitude < min_dist) {
+				index = i;
+				min_dist = destinations [i].position.magnitude;
+			}
+		}
+		
+		followedObject = destinations [index].gameObject;
+		agent.SetDestination (followedObject.transform.position);
+		intention = new Intention ((int)coverterIntentionTypes.Move, "Move Randomly", followedObject, 
+		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
+		isFollowing = true;
+		updatedIntention = true;
+		anim.SetBool ("isWalking", true);
+		state = anim.GetCurrentAnimatorStateInfo (0);
+		
+		lastDecisionTime = Time.time;
+		time = Time.time;
+		citizenInViewTime = float.MaxValue;
+		convertTime = float.MinValue;
 		attackTime = float.MinValue;
-
+		askForHelpTime = float.MinValue;
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
 		remainingCitizens = int.Parse (outputRemainingCitizens.text);
-		killedCitizens = int.Parse (inputKilledCitizens.text);
 		convertedCitizens = int.Parse (inputConvertedCitizens.text);
 		beliefs = updateBeliefs(beliefs);
 		
@@ -100,11 +124,11 @@ public class HeroBehaviour : MonoBehaviour {
 	/***********************************************************************
 	 ********************** BDI Architechture Methods **********************
 	 ***********************************************************************/
-
+	
 	void executeIntention(Intention intention){
-
+		
 	}
-
+	
 	Intention updateIntention(List<Belief> beliefs, List<Desire> desires, Intention oldIntention){
 		Intention newIntention;
 		if (intention.Type != (int)coverterIntentionTypes.Move)
@@ -112,77 +136,69 @@ public class HeroBehaviour : MonoBehaviour {
 		else {
 			newIntention = new Intention(oldIntention.Type, oldIntention.Description, oldIntention.IntentObject, float.MaxValue);
 		}
-
+		
 		return newIntention;
 	}
-
+	
 	List<Desire> updateDesires(List<Belief> beliefs, List<Desire> oldDesires){
 		List<Desire> newDesires = new List<Desire> (oldDesires);
-
+		
 		return newDesires;
 	}
-
+	
 	List<Belief> updateBeliefs(List<Belief> oldBeliefs){
 		List<Belief> newBeliefs = new List<Belief> (oldBeliefs);
-
+		
 		return newBeliefs;
 	}
-
+	
 	List<Perception> getCurrentPerceptions(){
 		List<Perception> newPerceptions = new List<Perception> (screamPerceps);
-
+		
 		return newPerceptions;
 	}
-
+	
 	/***********************************************************************
 	 ***************************** Sensor Methods **************************
 	 ***********************************************************************/
-
-
+	
+	
 	/***********************************************************************
 	 **************************** Actuator Methods *************************
 	 ***********************************************************************/
 
-	public void Attack(GameObject attacker, string attackerType){
-		ConverterVillainBehaviour convVillain;
-		StrikerVillainBehaviour strikeVillain;
-		int damage;
-		if((Time.time - attackTime) >= 1.0f){
+	void Attack(GameObject attacked)
+	{
+		if (Time.time - attackTime >= 1f) {
 			//TODO: update animation
-			if(Random.Range(1,11) > 6)
-				damage = Random.Range(1,6);
-			else
-				damage = Random.Range(6,11);
-			if (attackerType.Equals("Converter")) {
-				convVillain = (ConverterVillainBehaviour)attacker.GetComponent (typeof(ConverterVillainBehaviour));
-				convVillain.Attacked(damage);
-			}else if(attackerType.Equals("Striker")){
-				strikeVillain = (StrikerVillainBehaviour)attacker.GetComponent (typeof(StrikerVillainBehaviour));
-				strikeVillain.Attacked(damage);
+			if(attacked.CompareTag("Citizen")){
+				Debug.Log ("Attacking Citizen " + attacked.ToString());
+				citizenSc.Attacked ();
+			}else if(attacked.CompareTag("Hero")){
+				Debug.Log ("Attacking Hero");
+				int damage;
+				if(Random.Range(1,11) < 9)
+					damage = Random.Range(1,6);
+				else
+					damage = Random.Range(6,11);
+				heroBehaviour.Attacked(this.gameObject, "Converter", damage);
 			}
 			attackTime = Time.time;
 		}
 	}
-	
-	public void Attacked(GameObject attacker, string attackerType, int damage) {
-		ConverterVillainBehaviour convVillain;
-		StrikerVillainBehaviour strikeVillain;
+
+	public void Attacked(int damage){
 		if (life > 0) {
 			life -= damage;
 			health.value = life;
-			Debug.Log("Bayamax := Took " + damage + " damage!");
+			Debug.Log("Dormammu := Took " + damage + " damage!");
 		}else {
-			inCombat = false;			
-			if (attackerType.Equals("Converter")) {
-				convVillain = (ConverterVillainBehaviour)attacker.GetComponent (typeof(ConverterVillainBehaviour));
-				convVillain.InCombat = false;
-			}else if(attackerType.Equals("Striker")){
-				strikeVillain = (StrikerVillainBehaviour)attacker.GetComponent (typeof(StrikerVillainBehaviour));
-				strikeVillain.InCombat = false;
-			}
-			Debug.Log("I'm dead YO!!!!!!!!! - Hero");
+			inCombat = false;
+			if(heroBehaviour.InCombat)
+				heroBehaviour.InCombat = false;;
+			Debug.Log("I'm dead YO!!!!!!!!! - Darth Vader");
 			Destroy(gameObject);
 		}
-
 	}
 }
+

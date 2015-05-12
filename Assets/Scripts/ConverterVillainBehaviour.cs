@@ -4,18 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using SuperHeroAmbient;
 
-enum perceptionType {Saw, Heard, Touched}
-enum beliefTypes {See, Hear, Touching}
-enum desireTypes {Convert, Follow, Fight, Flee}
-enum intentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
-
-
+enum coverterPerceptionTypes {Saw, Heard, Touched}
+enum coverterBeliefTypes {See, Hear, Touching}
+enum coverterDesireTypes {Convert, Follow, Fight, Flee}
+enum coverterIntentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
 
 //Behaviour Class
 public class ConverterVillainBehaviour : MonoBehaviour
 {
-	const float TASKFOCUSTIME = 10f;
-
 	public Slider health;
 	public Text outputConvertedCitizens;
 	public Text outputRemainingCitizens;
@@ -28,9 +24,15 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	float lastDecisionTime;
 	float time;
 	float fieldOfViewAngle = 110f;           // Number of degrees, centred on forward, for the enemy see.
+	float citizenInViewTime;
+	float convertTime;
+	float attackTime;
+	float askForHelpTime;
 	bool isFollowing;
 	bool inCombat;
 	bool isAlive;
+	bool citizenInView = false;
+	bool updatedIntention;
 
 	GameObject followedObject;
 	GameObject hero;
@@ -38,13 +40,6 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	Vector3 citizenPos = new Vector3();
 	GameObject[] citizens = null;
 	CitizenBehaviour citizenSc = null;
-	bool citizenInView = false;
-	bool noPerception = true;
-	float citizenInViewTime;
-	float convertTime;
-	float attackTime;
-	float askForHelpTime;
-	bool updatedIntention;
 
 	Animator anim;
 	NavMeshAgent agent;
@@ -61,6 +56,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	public static event AskForHelp OnAskHelp;
 
 	//Getters and Setters
+
 	public bool IsFollowing {
 		get {
 			return isFollowing;
@@ -105,13 +101,12 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		isAlive = true;
 		inCombat = false;
 		convertedCitizens = 0;
-		inputKilledCitizens.text = "" + 0;
-		killedCitizens = int.Parse(inputKilledCitizens.text);
 		outputConvertedCitizens.text = "" + convertedCitizens;
 		hero = GameObject.FindGameObjectWithTag ("Hero");
 		heroBehaviour = hero.GetComponent<HeroBehaviour> ();
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
+		killedCitizens = int.Parse(inputKilledCitizens.text);
 
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		citizens = GameObject.FindGameObjectsWithTag ("Citizen");
@@ -131,12 +126,9 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			}
 		}
 
-		beliefs = updateBeliefs (beliefs);
-		desires = updateDesires (beliefs, desires);
-
 		followedObject = destinations [index].gameObject;
 		agent.SetDestination (followedObject.transform.position);
-		intention = new Intention ((int)intentionTypes.Move, "Move Randomly", followedObject, 
+		intention = new Intention ((int)coverterIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
 		isFollowing = true;
 		updatedIntention = true;
@@ -158,7 +150,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		killedCitizens = int.Parse (inputKilledCitizens.text);
 		beliefs = updateBeliefs(beliefs);
 
-		if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < TASKFOCUSTIME)){
+		if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
 			executeIntention(intention);
 		}
 		else {
@@ -230,7 +222,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			return;
 		}
 
-		if (intention.Type == (int)intentionTypes.Attack) {
+		if (intention.Type == (int)coverterIntentionTypes.Attack) {
 			if (HeroIsDead ()) {
 				intention.Concluded = true;
 				inCombat = false;
@@ -244,7 +236,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 					intention.DistanceToDestination = float.MaxValue;
 				}
 			}
-		} else if (intention.Type == (int)intentionTypes.Convert) {
+		} else if (intention.Type == (int)coverterIntentionTypes.Convert) {
 			citizenSc = (CitizenBehaviour)intention.IntentObject.GetComponent (typeof(CitizenBehaviour));
 			citizenPos = intention.IntentObject.transform.position;
 			if (CitizenInRange (intention.IntentObject)) {
@@ -280,7 +272,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 					Follow (citizenPos);
 				}
 			}
-		} else if (intention.Type == (int)intentionTypes.Flee) {
+		} else if (intention.Type == (int)coverterIntentionTypes.Flee) {
 			if (!HeroInRange ()) {
 				intention.Concluded = true;
 				intention.DistanceToDestination = float.MaxValue;
@@ -293,7 +285,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				Vector3 objective = hero.transform.position - transform.position;
 				Follow (objective.normalized);
 			}
-		} else if (intention.Type == (int)intentionTypes.FollowSound) {
+		} else if (intention.Type == (int)coverterIntentionTypes.FollowSound) {
 			if ((intention.SoundOrigin != Vector3.zero) &&
 				(Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) == 0)){
 				intention.Concluded = true;
@@ -302,7 +294,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				followedObject = intention.IntentObject;
 				Follow(followedObject.transform.position);
 			}
-		} else if(intention.Type == (int)intentionTypes.KillHero) { 
+		} else if(intention.Type == (int)coverterIntentionTypes.KillHero) { 
 			if(HeroIsDead()){
 				intention.Concluded = true;
 				intention.DistanceToDestination = float.MaxValue;
@@ -315,7 +307,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				followedObject = intention.IntentObject;
 				Follow(followedObject.transform.position);
 			}
-		} else if(intention.Type == (int)intentionTypes.AskHelp) { 
+		} else if(intention.Type == (int)coverterIntentionTypes.AskHelp) { 
 			if (!HeroInRange ()) {
 				intention.Concluded = true;
 				intention.DistanceToDestination = float.MaxValue;
@@ -334,7 +326,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				if(inCombat)
 					inCombat = false;
 			}
-		} else if (intention.Type == (int)intentionTypes.Move) {
+		} else if (intention.Type == (int)coverterIntentionTypes.Move) {
 			if (desires.Count != 0){
 				intention.Possible = false;
 				intention.DistanceToDestination = float.MaxValue;
@@ -361,13 +353,13 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		
 		for (int i = 0; i < citizens.Length; i++) {
 			if(inSight(citizens[i]))
-				perceptions.Add(new Perception(citizens[i], (int)perceptionType.Saw));
+				perceptions.Add(new Perception(citizens[i], (int)coverterPerceptionTypes.Saw));
 		}
 		
 		if (isTouching (hero)) {
-			perceptions.Add (new Perception (hero, (int)perceptionType.Touched));
+			perceptions.Add (new Perception (hero, (int)coverterPerceptionTypes.Touched));
 		} else if (inSight (hero)) {
-			perceptions.Add (new Perception (hero, (int)perceptionType.Saw));
+			perceptions.Add (new Perception (hero, (int)coverterPerceptionTypes.Saw));
 		}
 
 		return perceptions;
@@ -379,15 +371,15 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 		foreach (Perception percep in perceptions) {
 			if(!alreadyInBeliefs(percep, newBeliefs)){
-				if (percep.Type == (int)perceptionType.Heard){
+				if (percep.Type == (int)coverterPerceptionTypes.Heard){
 					newBeliefs.Add(new HearScreamBelief(percep.ObjectPercepted, percep.ObjectPercepted.transform.position));
-				} else if (percep.Type == (int)perceptionType.Saw){
+				} else if (percep.Type == (int)coverterPerceptionTypes.Saw){
 					if(percep.Tag.Equals("Hero")){
 						newBeliefs.Add(new SeeHeroBelief(percep.ObjectPercepted));
 					}else if(percep.Tag.Equals("Citizen")){
 						newBeliefs.Add(new SeeCitizenBelief(percep.ObjectPercepted));
 					}
-				} else if (percep.Type == (int)perceptionType.Touched && percep.Tag.Equals("Hero")){
+				} else if (percep.Type == (int)coverterPerceptionTypes.Touched && percep.Tag.Equals("Hero")){
 					newBeliefs.Add(new TouchHeroBelief(percep.ObjectPercepted));
 				}
 			}
@@ -401,14 +393,14 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 		foreach (Belief belief in beliefs) {
 			if(!alreadyInDesires(belief, newDesires)){
-				if(belief.Type == (int)beliefTypes.Hear){
-					newDesires.Add(new Desire((int)desireTypes.Follow, "Follow Scream", belief.BeliefObject));
-				}else if((belief.Type == (int)beliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject)){
-					newDesires.Add(new Desire((int)desireTypes.Convert, "Convert Citizen", belief.BeliefObject));
-				}else if((belief.Type == (int)beliefTypes.See) && (belief is SeeHeroBelief)){
-					newDesires.Add(new Desire((int)desireTypes.Flee, "Flee from Hero", belief.BeliefObject));
-				}else if(belief.Type == (int)beliefTypes.Touching){
-					newDesires.Add(new Desire((int)desireTypes.Fight, "Fight the Hero", belief.BeliefObject));
+				if(belief.Type == (int)coverterBeliefTypes.Hear){
+					newDesires.Add(new Desire((int)coverterDesireTypes.Follow, "Follow Scream", belief.BeliefObject));
+				}else if((belief.Type == (int)coverterBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject)){
+					newDesires.Add(new Desire((int)coverterDesireTypes.Convert, "Convert Citizen", belief.BeliefObject));
+				}else if((belief.Type == (int)coverterBeliefTypes.See) && (belief is SeeHeroBelief)){
+					newDesires.Add(new Desire((int)coverterDesireTypes.Flee, "Flee from Hero", belief.BeliefObject));
+				}else if(belief.Type == (int)coverterBeliefTypes.Touching){
+					newDesires.Add(new Desire((int)coverterDesireTypes.Fight, "Fight the Hero", belief.BeliefObject));
                	}
 			}
 		}
@@ -418,7 +410,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 	Intention updateIntention(List<Belief> beliefs, List<Desire> desires, Intention oldIntention){
 		Intention newIntention;
-		if (intention.Type != (int)intentionTypes.Move)
+		if (intention.Type != (int)coverterIntentionTypes.Move)
 			newIntention = oldIntention;
 		else {
 			newIntention = new Intention(oldIntention.Type, oldIntention.Description, oldIntention.IntentObject, float.MaxValue);
@@ -429,32 +421,32 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 		if (desires.Count != 0) {
 			if (!inCombat && ((remainingCitizens + convertedCitizens + killedCitizens) < (Mathf.FloorToInt (0.4f * heroBehaviour.startingCitizens)))
-				&& (existsBelief<SeeHeroBelief> ((int)beliefTypes.See, beliefs)) && !HeroIsDead()) {
-				newIntention = new Intention ((int)intentionTypes.KillHero, "Kill the Hero", hero,
+				&& (existsBelief<SeeHeroBelief> ((int)coverterBeliefTypes.See, beliefs)) && !HeroIsDead()) {
+				newIntention = new Intention ((int)coverterIntentionTypes.KillHero, "Kill the Hero", hero,
 				                              Vector3.Distance (currentPosition, hero.transform.position));
-			} else if (inCombat && (life < 40) && existsDesire ((int)desireTypes.Flee, desires) && (hero != null)) {
-				newIntention = new Intention ((int)intentionTypes.AskHelp, "Flee from Combat and Ask for Help", hero, 
+			} else if (inCombat && (life < 40) && existsDesire ((int)coverterDesireTypes.Flee, desires) && (hero != null)) {
+				newIntention = new Intention ((int)coverterIntentionTypes.AskHelp, "Flee from Combat and Ask for Help", hero, 
 				                              Vector3.Distance (currentPosition, hero.transform.position));
 			} else {
 				foreach (Desire desire in desires) {
 					if (Vector3.Distance (this.transform.position, desire.ObjectiveDestination) < newIntention.DistanceToDestination) {
-						if (desire.Type == (int)desireTypes.Convert){
-							newIntention = new Intention ((int)intentionTypes.Convert, "Convert Citizen", desire.SubjectObject,
+						if (desire.Type == (int)coverterDesireTypes.Convert){
+							newIntention = new Intention ((int)coverterIntentionTypes.Convert, "Convert Citizen", desire.SubjectObject,
 							                             Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
-						else if (desire.Type == (int)desireTypes.Fight){
-							newIntention = new Intention ((int)intentionTypes.Attack, "Attack Hero", desire.SubjectObject,
+						else if (desire.Type == (int)coverterDesireTypes.Fight){
+							newIntention = new Intention ((int)coverterIntentionTypes.Attack, "Attack Hero", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
-						else if (desire.Type == (int)desireTypes.Flee){
-							newIntention = new Intention ((int)intentionTypes.Flee, "Flee from Hero", desire.SubjectObject,
+						else if (desire.Type == (int)coverterDesireTypes.Flee){
+							newIntention = new Intention ((int)coverterIntentionTypes.Flee, "Flee from Hero", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
-						else if (desire.Type == (int)desireTypes.Follow){
-							newIntention = new Intention ((int)intentionTypes.FollowSound, "Follow Sound", desire.SubjectObject,
+						else if (desire.Type == (int)coverterDesireTypes.Follow){
+							newIntention = new Intention ((int)coverterIntentionTypes.FollowSound, "Follow Sound", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination),
 							                              desire.ObjectiveDestination);
 							chosenDesire = desire;
@@ -471,7 +463,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 		else{
 			GameObject dest = destinations [Random.Range(0, destinations.Length)].gameObject;
-			newIntention = new Intention((int)intentionTypes.Move, "Move Randomly", dest,
+			newIntention = new Intention((int)coverterIntentionTypes.Move, "Move Randomly", dest,
 			                             Vector3.Distance(currentPosition, dest.transform.position));
 		}
 
@@ -481,10 +473,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	Belief findOriginatingBelief(Desire desire, List<Belief> beliefsList){
 		Belief origBelief = null;
 		foreach (Belief belief in beliefsList) {
-			if((((belief.Type == (int)beliefTypes.Hear) && (desire.Type == (int)desireTypes.Follow)) || 
-			    ((belief.Type == (int)beliefTypes.See) && ((desire.Type == (int)desireTypes.Convert) || 
-		                                           			(desire.Type == (int)desireTypes.Flee))) ||
-			    ((belief.Type == (int)beliefTypes.Touching) && (desire.Type == (int)desireTypes.Fight)))
+			if((((belief.Type == (int)coverterBeliefTypes.Hear) && (desire.Type == (int)coverterDesireTypes.Follow)) || 
+			    ((belief.Type == (int)coverterBeliefTypes.See) && ((desire.Type == (int)coverterDesireTypes.Convert) || 
+		                                           			(desire.Type == (int)coverterDesireTypes.Flee))) ||
+			    ((belief.Type == (int)coverterBeliefTypes.Touching) && (desire.Type == (int)coverterDesireTypes.Fight)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				origBelief = belief;
 			}
@@ -494,9 +486,9 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 	bool alreadyInBeliefs(Perception perception, List<Belief> beliefsList){
 		foreach (Belief belief in beliefsList) {
-			if ((((belief.Type == (int)beliefTypes.Hear) && (perception.Type == (int)perceptionType.Heard)) ||
-				((belief.Type == (int)beliefTypes.See) && (perception.Type == (int)perceptionType.Saw)) ||
-				((belief.Type == (int)beliefTypes.Touching) && (perception.Type == (int)perceptionType.Touched)))
+			if ((((belief.Type == (int)coverterBeliefTypes.Hear) && (perception.Type == (int)coverterPerceptionTypes.Heard)) ||
+				((belief.Type == (int)coverterBeliefTypes.See) && (perception.Type == (int)coverterPerceptionTypes.Saw)) ||
+				((belief.Type == (int)coverterBeliefTypes.Touching) && (perception.Type == (int)coverterPerceptionTypes.Touched)))
 				&& (belief.BeliefObject.Equals (perception.ObjectPercepted))) {
 				return true;
 			}
@@ -506,10 +498,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 	bool alreadyInDesires(Belief belief, List<Desire> desiresList){
 		foreach(Desire desire in desiresList){
-			if((((belief.Type == (int)beliefTypes.Hear) && (desire.Type == (int)desireTypes.Follow)) || 
-			    ((belief.Type == (int)beliefTypes.See) && ((desire.Type == (int)desireTypes.Convert) || 
-			                                           		(desire.Type == (int)desireTypes.Flee))) ||
-			    ((belief.Type == (int)beliefTypes.Touching) && (desire.Type == (int)desireTypes.Fight)))
+			if((((belief.Type == (int)coverterBeliefTypes.Hear) && (desire.Type == (int)coverterDesireTypes.Follow)) || 
+			    ((belief.Type == (int)coverterBeliefTypes.See) && ((desire.Type == (int)coverterDesireTypes.Convert) || 
+			                                           		(desire.Type == (int)coverterDesireTypes.Flee))) ||
+			    ((belief.Type == (int)coverterBeliefTypes.Touching) && (desire.Type == (int)coverterDesireTypes.Fight)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				return true;
 			}
@@ -652,7 +644,6 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	
 	void StopFollowing()
 	{
-		noPerception = true;
 		if (followedObject.CompareTag ("Citizen"))
 			citizenSc = null;
 		followedObject = null;
@@ -680,14 +671,18 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				citizenSc.Attacked ();
 			}else if(attacked.CompareTag("Hero")){
 				Debug.Log ("Attacking Hero");
-				heroBehaviour.Attacked(this.gameObject);
+				int damage;
+				if(Random.Range(1,11) < 9)
+					damage = Random.Range(1,6);
+				else
+					damage = Random.Range(6,11);
+				heroBehaviour.Attacked(this.gameObject, "Converter", damage);
 			}
 			attackTime = Time.time;
 		}
 	}
 
-	public void Attacked(){
-		int damage = Random.Range (1, 11);
+	public void Attacked(int damage){
 		if (life > 0) {
 			life -= damage;
 			health.value = life;
@@ -726,7 +721,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	void HeardScream(GameObject screamer){
 		float distance = Vector3.Distance (this.transform.position, screamer.transform.position);
 		if (distance > 4.0f && distance < 40.0f) {
-			screamPerceps.Add(new Perception(screamer, (int)perceptionType.Heard));
+			screamPerceps.Add(new Perception(screamer, (int)coverterPerceptionTypes.Heard));
 		}
 	}
 
