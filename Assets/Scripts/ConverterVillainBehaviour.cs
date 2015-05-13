@@ -106,7 +106,6 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		heroBehaviour = hero.GetComponent<HeroBehaviour> ();
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
-		killedCitizens = int.Parse(inputKilledCitizens.text);
 
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		citizens = GameObject.FindGameObjectsWithTag ("Citizen");

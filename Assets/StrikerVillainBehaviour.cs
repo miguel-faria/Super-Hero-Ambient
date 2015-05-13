@@ -65,7 +65,6 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		heroBehaviour = hero.GetComponent<HeroBehaviour> ();
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
-		convertedCitizens = int.Parse(inputConvertedCitizens.text);
 		
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		citizens = GameObject.FindGameObjectsWithTag ("Citizen");

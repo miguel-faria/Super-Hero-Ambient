@@ -26,6 +26,7 @@ public class HeroBehaviour : MonoBehaviour {
 	float lastDecisionTime;
 	float time;
 	float attackTime;
+	float citizenInViewTime;
 	float fieldOfViewAngle = 110f;           // Number of degrees, centred on forward, for the enemy see.
 	bool isFollowing;
 	bool inCombat;
@@ -75,7 +76,37 @@ public class HeroBehaviour : MonoBehaviour {
 		savedCitizens = 0;
 		outputSavedCitizens.text = "" + savedCitizens;
 		attackTime = float.MinValue;
+		anim = GetComponent<Animator> ();
+		agent = GetComponent<NavMeshAgent>();
 
+		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
+		destinations = new Transform[objects.Length];
+		for (int i = 0; i < objects.Length; i++) 
+			destinations [i] = objects [i].transform;
+		
+		float min_dist = float.MaxValue;
+		int index = -1;
+		
+		for (int i = 0; i < destinations.Length; i++) {
+			if (destinations [i].position.magnitude < min_dist) {
+				index = i;
+				min_dist = destinations [i].position.magnitude;
+			}
+		}
+
+		followedObject = destinations [index].gameObject;
+		agent.SetDestination (followedObject.transform.position);
+		intention = new Intention ((int)coverterIntentionTypes.Move, "Move Randomly", followedObject, 
+		                           Vector3.Distance (this.transform.position, followedObject.transform.position));
+
+		isFollowing = true;
+		updatedIntention = true;
+		anim.SetBool ("isWalking", true);
+		state = anim.GetCurrentAnimatorStateInfo (0);
+
+		lastDecisionTime = Time.time;
+		time = Time.time;
+		citizenInViewTime = float.MaxValue;
 	}
 	
 	// Update is called once per frame
@@ -84,7 +115,7 @@ public class HeroBehaviour : MonoBehaviour {
 		killedCitizens = int.Parse (inputKilledCitizens.text);
 		convertedCitizens = int.Parse (inputConvertedCitizens.text);
 		beliefs = updateBeliefs(beliefs);
-		
+
 		if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
 			executeIntention(intention);
 		}

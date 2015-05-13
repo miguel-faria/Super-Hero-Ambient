@@ -58,8 +58,8 @@ public class CitizenBehaviour : MonoBehaviour {
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		destinations = new Transform[objects.Length];
 		for (int i = 0; i < objects.Length; i++)
-			destinations [i] = objects [i].transform ;
-		
+			destinations [i] = objects [i].transform ;;
+
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
 		
