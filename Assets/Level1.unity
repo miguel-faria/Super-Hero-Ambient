@@ -14742,6 +14742,10 @@ Prefab:
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 71db3c8c980cdfe43a932c4c97642934, type: 2}
+      propertyPath: m_TagString
+      value: PowerUP
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 71db3c8c980cdfe43a932c4c97642934, type: 2}
   m_IsPrefabParent: 0
@@ -15491,7 +15495,7 @@ GameObject:
   - 4: {fileID: 320719905}
   m_Layer: 0
   m_Name: RoadLanes_Example
-  m_TagString: Untagged
+  m_TagString: PowerUP
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -23727,6 +23731,10 @@ Prefab:
       propertyPath: m_Name
       value: ConverterVillain
       objectReference: {fileID: 0}
+    - target: {fileID: 9500000, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
+      propertyPath: m_Avatar
+      value: 
+      objectReference: {fileID: 9000000, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b3584f86534cb054aa16a90fe2621748, type: 3}
   m_IsPrefabParent: 0
@@ -24083,6 +24091,10 @@ Prefab:
       propertyPath: m_Name
       value: Hero
       objectReference: {fileID: 0}
+    - target: {fileID: 100106, guid: be8ce31f1e1f1514d9fc5a2d5bc86aa0, type: 3}
+      propertyPath: m_TagString
+      value: Hero
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: be8ce31f1e1f1514d9fc5a2d5bc86aa0, type: 3}
   m_IsPrefabParent: 0
@@ -24118,7 +24130,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 8
+  m_Radius: 32.5
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!195 &1998199088
 NavMeshAgent:

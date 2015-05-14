@@ -86,7 +86,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		
 		followedObject = destinations [index].gameObject;
 		agent.SetDestination (followedObject.transform.position);
-		intention = new Intention ((int)coverterIntentionTypes.Move, "Move Randomly", followedObject, 
+		intention = new Intention ((int)villainIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
 		isFollowing = true;
 		updatedIntention = true;
@@ -130,7 +130,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	
 	Intention updateIntention(List<Belief> beliefs, List<Desire> desires, Intention oldIntention){
 		Intention newIntention;
-		if (intention.Type != (int)coverterIntentionTypes.Move)
+		if (intention.Type != (int)villainIntentionTypes.Move)
 			newIntention = oldIntention;
 		else {
 			newIntention = new Intention(oldIntention.Type, oldIntention.Description, oldIntention.IntentObject, float.MaxValue);
@@ -161,6 +161,98 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	 ***************************** Sensor Methods **************************
 	 ***********************************************************************/
 	
+	bool HeroInRange(){
+		return ((Vector3.Distance(this.transform.position, hero.transform.position) < Definitions.HEROMAXVIEWDISTANCE) &&
+		        (!InSightOfHero(this.gameObject)));
+	}
+	
+	bool HeroInAttackRange(){
+		return isTouching(hero);
+	}
+	
+	bool InSightOfHero(GameObject other){
+		float distance = Vector3.Distance (hero.transform.position, other.transform.position);
+		Vector3 direction = other.transform.position - this.transform.position;
+		float angle = Vector3.Angle (direction, this.transform.forward);	
+		// If the angle between forward and where the player is, is less than half the angle of view...
+		if (distance < Definitions.VILLAINMAXVIEWDISTANCE && angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
+	
+	bool CitizenInRange(GameObject citizen)
+	{
+		float distance = Vector3.Distance (this.transform.position, citizen.transform.position);
+		return (distance <= Definitions.AOEAREA);
+	}	
+	
+	bool alreadyConverted(GameObject citizen){
+		if (citizen.tag.Equals ("Citizen")) {
+			CitizenBehaviour citizenBehaviour = (CitizenBehaviour) citizen.GetComponent(typeof(CitizenBehaviour));
+			return CitizenIsEvil(citizenBehaviour);
+		} else {
+			Debug.Log("Only citizens can be converted!");
+			return false;
+		}
+	}
+	
+	bool CitizenIsEvil(CitizenBehaviour citizen){
+		if (citizen.IsEvil())
+			return true;
+		else {
+			return false;
+		}
+	}
+	
+	bool CitizenIsDead (CitizenBehaviour citizen)
+	{
+		if (citizen.Life <= 0)
+			return true;
+		else {
+			return false;
+		}
+	}
+	
+	bool HeroIsDead(){
+		if (heroBehaviour.Life <= 0)
+			return true;
+		else {
+			return false;
+		}
+	}
+	
+	bool inSight(GameObject other){
+		// Create a vector from the enemy to the player and store the angle between it and forward.
+		Vector3 direction = other.transform.position - this.transform.position;
+		float distance = Vector3.Distance (this.transform.position, other.transform.position);
+		float angle = Vector3.Angle (direction, this.transform.forward);
+		if (other.CompareTag ("Citizen")) {			
+			// If the angle between forward and where the player is, is less than half the angle of view...
+			if (distance < Definitions.VILLAINMAXVIEWDISTANCE && angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
+				return true;
+			}
+		}
+		if(other.CompareTag("Hero")){
+			if (distance > Definitions.MAXTOUCHINGDISTANCE &&
+			    distance < Definitions.VILLAINMAXVIEWDISTANCE &&
+			    angle < Definitions.FIELDOFVIEWANGLE * 0.5f){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	bool isTouching(GameObject other){
+		float distance = Vector3.Distance (this.transform.position, other.transform.position);
+		if (distance <= Definitions.MAXTOUCHINGDISTANCE && distance >= 0.0f){
+			return true;
+		}
+		return false;
+	}
 	
 	/***********************************************************************
 	 **************************** Actuator Methods *************************

@@ -10,7 +10,6 @@ public class CitizenBehaviour : MonoBehaviour {
 	AnimatorStateInfo state;
 	Transform[] destinations;
 	float time = 0f;
-	float fieldOfViewAngle = 110f;
 
 	int life = 3;
 	public delegate void AttackedAction(GameObject gob);
@@ -109,7 +108,7 @@ public class CitizenBehaviour : MonoBehaviour {
 			float angle = Vector3.Angle (direction, transform.forward);
 
 			// If the angle between forward and where the player is, is less than half the angle of view...
-			if (angle < fieldOfViewAngle * 0.5f) {
+			if (angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
 				isRunningFromVillain = true;
 				return;
 				
@@ -122,7 +121,7 @@ public class CitizenBehaviour : MonoBehaviour {
 			float angle = Vector3.Angle (heroPosition, transform.forward);
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
-			if (angle < fieldOfViewAngle * 0.5f) {
+			if (angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
 				heroSeen = true;
 				return;	
 			}
@@ -139,7 +138,7 @@ public class CitizenBehaviour : MonoBehaviour {
 			float angle = Vector3.Angle (direction, transform.forward);
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
-			if (angle < fieldOfViewAngle * 0.5f) {
+			if (angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
 				isRunningFromVillain = true;
 				return;
 				
@@ -151,7 +150,7 @@ public class CitizenBehaviour : MonoBehaviour {
 			float angle = Vector3.Angle (heroPosition, transform.forward);
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
-			if (angle < fieldOfViewAngle * 0.5f) {
+			if (angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
 				heroSeen = true;
 				return;	
 			}
@@ -216,7 +215,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	{
 		float distance = Vector3.Distance (transform.position, citizen.transform.position);
 		// In Hearing Range
-		if (distance <= 12 && !IsEvil ()) {
+		if (distance <= Definitions.AOERUNNINGDISTANCE && !IsEvil ()) {
 			isRunningFromScream = true;
 			runTime = Time.time;
 			direction = citizen.transform.position - transform.position;

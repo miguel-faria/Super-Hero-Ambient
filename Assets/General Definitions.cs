@@ -4,9 +4,28 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace SuperHeroAmbient{
+	
+	enum villainPerceptionTypes {Saw, Heard, Touched}
+	enum villainBeliefTypes {See, Hear, Touching}
+	enum villainDesireTypes {Convert, Follow, Fight, Flee}
+	enum villainIntentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
+	enum heroPerceptionType {Saw, Heard, Touched}
+	enum heroBeliefTypes {See, Hear, Touching}
+	enum heroDesireTypes {Save, Follow, Fight, Pick}
+	enum heroIntentionTypes {Move, FollowSound, AttackVillain, SaveCitizen, PickupPowerUp, SaveCrush, HealCrush, AvengeCrush}
 
 	class Definitions{
-		public const float TASKFOCUSTIME = 10f;
+		public const float TASKFOCUSTIME = 10.0f; // Time a BDI agent focus on a task
+		public const float FIELDOFVIEWANGLE = 110.0f; // Number of degrees, centred on forward, for the enemy see.
+		public const float VILLAINMAXVIEWDISTANCE = 30.0f;
+		public const float HEROMAXVIEWDISTANCE = 32.5f;
+		public const float MAXTOUCHINGDISTANCE = 1.5f;
+		public const float AOEAREA = 4.0f;
+		public const float AOERUNNINGDISTANCE = 12.0f;
+		public const float HEROMAXHEARINGDISTANCE = 40.0f;
+		public const float VILLAINMAXHEARINGDISTANCE = 39.0f;
+		public const float AOEHEARINGAREA = 4.0f;
+		public const float SUPERSENSESAREA = 15.0f;
 	}
 	
 	//Utility classes
@@ -94,7 +113,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _citizenPosition;
 		
-		public SeeCitizenBelief(GameObject citizen) : base ((int)coverterBeliefTypes.See, "Saw Citizen", citizen){
+		public SeeCitizenBelief(GameObject citizen) : base ((int)villainBeliefTypes.See, "Saw Citizen", citizen){
 			_citizenPosition = citizen.transform.position;
 		}
 		
@@ -112,7 +131,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _screamOrigin;
 		
-		public HearScreamBelief (GameObject screamer, Vector3 screamOrigin) : base((int)coverterBeliefTypes.Hear, "Heard a Scream", screamer) {
+		public HearScreamBelief (GameObject screamer, Vector3 screamOrigin) : base((int)villainBeliefTypes.Hear, "Heard a Scream", screamer) {
 			_screamOrigin = screamOrigin;
 		}
 		
@@ -130,7 +149,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _heroPosition;
 		
-		public SeeHeroBelief (GameObject hero): base((int)coverterBeliefTypes.See, "Saw the Hero", hero){
+		public SeeHeroBelief (GameObject hero): base((int)villainBeliefTypes.See, "Saw the Hero", hero){
 			_heroPosition = hero.transform.position;
 		}
 		
@@ -148,7 +167,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _heroPosition;
 		
-		public TouchHeroBelief (GameObject hero): base((int)coverterBeliefTypes.Touching, "Touch the Hero", hero){
+		public TouchHeroBelief (GameObject hero): base((int)villainBeliefTypes.Touching, "Touch the Hero", hero){
 			_heroPosition = hero.transform.position;
 		}
 		
@@ -161,7 +180,61 @@ namespace SuperHeroAmbient{
 			}
 		}
 	}
-	
+
+	class TouchVillainBelief : Belief {
+
+		Vector3 _villainPosition;
+		
+		public TouchVillainBelief (GameObject villain): base((int)heroBeliefTypes.Touching, "Touch a Villain", villain){
+			_villainPosition = villain.transform.position;
+		}
+		
+		public Vector3 VillainPosition {
+			get {
+				return _villainPosition;
+			}
+			set {
+				_villainPosition = value;
+			}
+		}
+	}
+
+	class SeeVillainBelief : Belief {
+		
+		Vector3 _villainPosition;
+		
+		public SeeVillainBelief (GameObject villain): base((int)heroBeliefTypes.Touching, "Saw a Villain", villain){
+			_villainPosition = villain.transform.position;
+		}
+		
+		public Vector3 VillainPosition {
+			get {
+				return _villainPosition;
+			}
+			set {
+				_villainPosition = value;
+			}
+		}
+	}
+
+	class SeeCrushBelief : Belief{
+		
+		Vector3 _crushPosition;
+		
+		public SeeCrushBelief(GameObject crush) : base ((int)villainBeliefTypes.See, "Saw Her... Oh I love her...", crush){
+			_crushPosition = crush.transform.position;
+		}
+		
+		public Vector3 CrushPosition {
+			get {
+				return _crushPosition;
+			}
+			set {
+				_crushPosition = value;
+			}
+		}
+	}
+
 	class Desire{
 		
 		int _type;

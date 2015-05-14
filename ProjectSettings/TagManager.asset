@@ -10,6 +10,7 @@ TagManager:
   - FxTemporaire
   - HUD
   - Hero
+  - PowerUP
   layers:
   - Default
   - TransparentFX
