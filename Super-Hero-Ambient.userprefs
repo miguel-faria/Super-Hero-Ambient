@@ -1,15 +1,10 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\StrikerVillainBehaviour.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\CitizenBehaviour.cs">
     <Files>
-      <File FileName="Assets\Scripts\Spawning.cs" Line="10" Column="56" />
-      <File FileName="Assets\Scripts\ConverterVillainBehaviour.cs" Line="142" Column="14" />
-      <File FileName="Assets\Scripts\CitizenBehaviour.cs" Line="193" Column="34" />
+      <File FileName="Assets\Scripts\CitizenBehaviour.cs" Line="15" Column="15" />
       <File FileName="Assets\Scripts\GOTOscript.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\HeroBehaviour.cs" Line="291" Column="71" />
-      <File FileName="Assets\General Definitions.cs" Line="11" Column="73" />
-      <File FileName="Assets\StrikerVillainBehaviour.cs" Line="18" Column="14" />
-      <File FileName="Assets\JMO Assets\Cartoon FX\Scripts\CFX_AutoDestructShuriken.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\HeroBehaviour.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

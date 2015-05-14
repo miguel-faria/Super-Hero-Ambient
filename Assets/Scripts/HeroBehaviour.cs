@@ -22,11 +22,14 @@ public class HeroBehaviour : MonoBehaviour {
 	float time;
 	float attackTime;
 	float citizenInViewTime;
+	float usedSuperSpeedTime;
 	bool isFollowing;
 	bool inCombat;
 	bool isAlive;
 	bool updatedIntention;
 	bool saveCrush;
+	bool superSpeedCharged;
+	bool usedSuperSpeed;
 	
 	Animator anim;
 	NavMeshAgent agent;
@@ -109,12 +112,14 @@ public class HeroBehaviour : MonoBehaviour {
 		isFollowing = true;
 		updatedIntention = true;
 		saveCrush = false;
+		superSpeedCharged = true;
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 
 		lastDecisionTime = Time.time;
 		time = Time.time;
 		citizenInViewTime = float.MaxValue;
+		usedSuperSpeedTime = Time.time;
 	}
 	
 	// Update is called once per frame
@@ -160,6 +165,18 @@ public class HeroBehaviour : MonoBehaviour {
 
 	List<Desire> updateDesires(List<Belief> beliefs, List<Desire> oldDesires){
 		List<Desire> newDesires = new List<Desire> (oldDesires);
+
+		foreach (Belief belief in beliefs) {
+			if(!alreadyInDesires(belief, newDesires)){
+				if(belief.Type == (int)heroBeliefTypes.See){
+
+				}else if(belief.Type == (int)heroBeliefTypes.Touching){
+
+				}else if(belief.Type == (int)heroBeliefTypes.CanUseSuperSpeed){
+
+				}
+			}
+		}
 
 		return newDesires;
 	}
@@ -214,6 +231,12 @@ public class HeroBehaviour : MonoBehaviour {
 				newPerceptions.Add(new Perception(powerUPs[i].gameObject, (int)heroPerceptionType.Saw));
 		}*/
 
+		if (!superSpeedCharged && ((Time.time - usedSuperSpeedTime) > Definitions.SUPERSPEEDCOOLDOWN))
+			newPerceptions.Add (new Perception (this.gameObject, (int)heroPerceptionType.SuperSpeedAvailable));
+
+		if(usedSuperSpeed && ((Time.time - usedSuperSpeedTime) > Definitions.SUPERSPEEDMAXTIME))
+
+
 		return newPerceptions;
 	}
 
@@ -223,7 +246,7 @@ public class HeroBehaviour : MonoBehaviour {
 			if((((belief.Type == (int)villainBeliefTypes.Hear) && (desire.Type == (int)villainDesireTypes.Follow)) || 
 			    ((belief.Type == (int)villainBeliefTypes.See) && ((desire.Type == (int)villainDesireTypes.Convert) || 
 			                                                  (desire.Type == (int)villainDesireTypes.Flee))) ||
-			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.Fight)))
+			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.DefendAgainstHero)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				origBelief = belief;
 			}
@@ -248,7 +271,7 @@ public class HeroBehaviour : MonoBehaviour {
 			if((((belief.Type == (int)villainBeliefTypes.Hear) && (desire.Type == (int)villainDesireTypes.Follow)) || 
 			    ((belief.Type == (int)villainBeliefTypes.See) && ((desire.Type == (int)villainDesireTypes.Convert) || 
 			                                                  (desire.Type == (int)villainDesireTypes.Flee))) ||
-			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.Fight)))
+			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.DefendAgainstHero)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				return true;
 			}
