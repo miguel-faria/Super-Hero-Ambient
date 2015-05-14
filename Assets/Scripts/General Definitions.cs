@@ -7,7 +7,7 @@ namespace SuperHeroAmbient{
 	
 	enum villainPerceptionTypes {Saw, Heard, Touched}
 	enum villainBeliefTypes {See, Hear, Touching}
-	enum villainDesireTypes {Convert, Follow, DefendAgainstHero, Flee}
+	enum villainDesireTypes {Convert, Follow, DefendAgainstHero, AttackCitizen, DefendOtherVillain, Flee}
 	enum villainIntentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
 	enum heroPerceptionType {Saw, Heard, Touched, SuperSpeedAvailable}
 	enum heroBeliefTypes {See, Hear, Touching, CanUseSuperSpeed}
@@ -205,7 +205,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _villainPosition;
 		
-		public SeeVillainBelief (GameObject villain): base((int)heroBeliefTypes.Touching, "Saw a Villain", villain){
+		public SeeVillainBelief (GameObject villain): base((int)heroBeliefTypes.See, "Saw a Villain", villain){
 			_villainPosition = villain.transform.position;
 		}
 		
@@ -223,7 +223,7 @@ namespace SuperHeroAmbient{
 		
 		Vector3 _crushPosition;
 		
-		public SeeCrushBelief(GameObject crush) : base ((int)villainBeliefTypes.See, "Saw Her... Oh I love her...", crush){
+		public SeeCrushBelief(GameObject crush) : base ((int)heroBeliefTypes.See, "Saw Her... Oh I love her...", crush){
 			_crushPosition = crush.transform.position;
 		}
 		
@@ -235,6 +235,11 @@ namespace SuperHeroAmbient{
 				_crushPosition = value;
 			}
 		}
+	}
+
+	class CanSuperSpeedBelief : Belief{
+				
+		public CanSuperSpeedBelief(GameObject crush) : base ((int)heroBeliefTypes.CanUseSuperSpeed, "Can Use Super Speed", crush){}
 	}
 
 	class Desire{
