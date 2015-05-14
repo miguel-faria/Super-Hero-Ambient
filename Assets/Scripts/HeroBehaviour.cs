@@ -113,13 +113,14 @@ public class HeroBehaviour : MonoBehaviour {
 		updatedIntention = true;
 		saveCrush = false;
 		superSpeedCharged = true;
+		usedSuperSpeed = false;
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 
 		lastDecisionTime = Time.time;
 		time = Time.time;
 		citizenInViewTime = float.MaxValue;
-		usedSuperSpeedTime = Time.time;
+		usedSuperSpeedTime = float.MaxValue;
 	}
 	
 	// Update is called once per frame
@@ -234,8 +235,11 @@ public class HeroBehaviour : MonoBehaviour {
 		if (!superSpeedCharged && ((Time.time - usedSuperSpeedTime) > Definitions.SUPERSPEEDCOOLDOWN))
 			newPerceptions.Add (new Perception (this.gameObject, (int)heroPerceptionType.SuperSpeedAvailable));
 
-		if(usedSuperSpeed && ((Time.time - usedSuperSpeedTime) > Definitions.SUPERSPEEDMAXTIME))
-
+		if (usedSuperSpeed && ((Time.time - usedSuperSpeedTime) > Definitions.SUPERSPEEDMAXTIME)) {
+			usedSuperSpeed = false;
+			agent.speed = 3.5f;
+			anim.SetFloat("Speed", 3.5f);
+		}
 
 		return newPerceptions;
 	}

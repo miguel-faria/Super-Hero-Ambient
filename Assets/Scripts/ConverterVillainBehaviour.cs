@@ -394,7 +394,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
 					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee from Hero", belief.BeliefObject));
 				}else if(belief.Type == (int)villainBeliefTypes.Touching){
-					newDesires.Add(new Desire((int)villainDesireTypes.Fight, "Fight the Hero", belief.BeliefObject));
+					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight the Hero", belief.BeliefObject));
                	}
 			}
 		}
@@ -429,7 +429,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 							                             Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
-						else if (desire.Type == (int)villainDesireTypes.Fight){
+						else if (desire.Type == (int)villainDesireTypes.DefendAgainstHero){
 							newIntention = new Intention ((int)villainIntentionTypes.Attack, "Attack Hero", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
@@ -470,7 +470,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			if((((belief.Type == (int)villainBeliefTypes.Hear) && (desire.Type == (int)villainDesireTypes.Follow)) || 
 			    ((belief.Type == (int)villainBeliefTypes.See) && ((desire.Type == (int)villainDesireTypes.Convert) || 
 		                                           			(desire.Type == (int)villainDesireTypes.Flee))) ||
-			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.Fight)))
+			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.DefendAgainstHero)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				origBelief = belief;
 			}
@@ -495,7 +495,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			if((((belief.Type == (int)villainBeliefTypes.Hear) && (desire.Type == (int)villainDesireTypes.Follow)) || 
 			    ((belief.Type == (int)villainBeliefTypes.See) && ((desire.Type == (int)villainDesireTypes.Convert) || 
 			                                           		(desire.Type == (int)villainDesireTypes.Flee))) ||
-			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.Fight)))
+			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.DefendAgainstHero)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				return true;
 			}
