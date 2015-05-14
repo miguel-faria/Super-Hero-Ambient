@@ -10,6 +10,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	AnimatorStateInfo state;
 	Transform[] destinations;
 	float time = 0f;
+	public GameObject MagicAura;
 
 	int life = 3;
 	public delegate void AttackedAction(GameObject gob);
@@ -55,6 +56,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	void Start () 
 	{
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
+		//GameObject.FindGameObjectWithTag ("FxTemporaire").SetActive(false);
 		destinations = new Transform[objects.Length];
 		for (int i = 0; i < objects.Length; i++)
 			destinations [i] = objects [i].transform ;;
@@ -64,7 +66,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		
 		time = Time.time;
 		agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
-		anim.SetBool ("isWalking", true);
+		anim.SetFloat ("Speed", 3f);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 		transformationState = 0;
 	}
@@ -72,8 +74,8 @@ public class CitizenBehaviour : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!IsEvil ()) {
-			if (isRunningFromScream && Time.time - runTime >= 1.5f) {
+		if (!IsEvil () && Time.time - time >= 3f) {
+			if (isRunningFromScream) {
 				StopRunning ();
 				return;
 			}
@@ -81,16 +83,16 @@ public class CitizenBehaviour : MonoBehaviour {
 				Run ();
 				return;
 			}
-			if (noPerception && Time.time - time >= 1.5f) {
+			if (noPerception ) {
 				RandomWalk ();
 				return;
 			}
 		}
-		if (heroSeen) {
+		if (heroSeen && Time.time - time >= 3f) {
 			WarnVillains ();
 			return;
 		}
-		if (noPerception && Time.time - time >= 1.5f) {
+		if (noPerception && Time.time - time >= 3f) {
 			RandomWalk ();
 			return;
 		}
@@ -183,6 +185,14 @@ public class CitizenBehaviour : MonoBehaviour {
 		if (transformationState < 5) {
 			transformationState++;
 			Debug.Log ("Being transformed!!! More " + (5 - transformationState) + " to become evil!");
+			if(transformationState == 5){
+				//GameObject aura = GameObject.Find("ConvertionMagic");
+				//aura.SetActive(true);
+
+				Quaternion rotation = new Quaternion();
+				GameObject aura =(GameObject) Instantiate(MagicAura, transform.position, rotation);
+				aura.transform.SetParent(transform);
+			}
 		}
 		if (OnAttack != null)
 			OnAttack (this.gameObject);
@@ -200,6 +210,8 @@ public class CitizenBehaviour : MonoBehaviour {
 	void Run()
 	{
 		agent.speed = 8;
+		Debug.Log ("AHAHASHHAAHSLDJAÇSDJÇA");
+		anim.SetFloat ("Speed", 8f);
 		agent.SetDestination(direction.normalized);
 	}
 
@@ -225,8 +237,15 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void RandomWalk()
 	{
-		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
+
+		Vector3 position = new Vector3(Random.Range(-45f,80f), 0, Random.Range(-70f, 50f));
+		NavMeshHit hit;
+		NavMesh.SamplePosition(position, out hit, 10, 1);
+		position = hit.position;
+		//agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
+		agent.SetDestination (position);
 		agent.speed = 3.5f;
+		anim.SetFloat ("Speed", 3.5f);
 		time = Time.time;
 	}
 

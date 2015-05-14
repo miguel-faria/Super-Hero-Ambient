@@ -9,7 +9,7 @@ public class Spawning : MonoBehaviour {
 	void Start () {
 		GameObject citizen = GameObject.Find ("SpawningCitizen");
 		for (int i = 0; i < startingCitizens ; i++) {
-			Vector3 position = new Vector3(Random.Range(-1000f,1000f), 0, Random.Range(-1000f, 1000f));
+			Vector3 position = new Vector3(Random.Range(-45f,80f), 0, Random.Range(-70f, 50f));
 			NavMeshHit hit;
 			NavMesh.SamplePosition(position, out hit, 10, 1);
 			position = hit.position;

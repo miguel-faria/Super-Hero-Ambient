@@ -100,7 +100,7 @@ GameObject:
   - 199: {fileID: 19900010}
   - 114: {fileID: 11400006}
   m_Layer: 0
-  m_Name: CFX3_DarkMagicAura_B_Runic
+  m_Name: MagicAura
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

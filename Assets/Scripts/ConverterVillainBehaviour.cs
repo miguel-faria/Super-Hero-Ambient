@@ -139,19 +139,20 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		remainingCitizens = int.Parse (outputRemainingCitizens.text);
-		killedCitizens = int.Parse (inputKilledCitizens.text);
-		beliefs = updateBeliefs(beliefs);
-
-		if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
-			executeIntention(intention);
-		}
-		else {
-			desires = updateDesires(beliefs, desires);
-			intention = updateIntention(beliefs, desires, intention);
-			updatedIntention = true;
-			executeIntention(intention);
-			lastDecisionTime = Time.time;
+		if (isAlive) {
+			remainingCitizens = int.Parse (outputRemainingCitizens.text);
+			killedCitizens = int.Parse (inputKilledCitizens.text);
+			beliefs = updateBeliefs (beliefs);
+			
+			if (intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)) {
+				executeIntention (intention);
+			} else {
+				desires = updateDesires (beliefs, desires);
+				intention = updateIntention (beliefs, desires, intention);
+				updatedIntention = true;
+				executeIntention (intention);
+				lastDecisionTime = Time.time;
+			}
 		}
 
 		//updateAnimation (intention.IntentObject);
@@ -661,13 +662,16 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			convertedCitizens++;
 			outputConvertedCitizens.text = "" + convertedCitizens;
 		}
-		UpdateAnimations (false, false, false, true, true);
+		anim.SetTrigger ("Convert");
+		agent.Stop ();
+		//UpdateAnimations (false, false, false, true, true);
 	}
 	
 	void Attack(GameObject attacked)
 	{
 		if (Time.time - attackTime >= 1f) {
-			UpdateAnimations (false, false, true, true, false);
+			//UpdateAnimations (false, false, true, true, false);
+			anim.SetBool("isAttacking", true);
 			if(attacked.CompareTag("Citizen")){
 				Debug.Log ("Attacking Citizen " + attacked.ToString());
 				citizenSc.Attacked ();
@@ -692,9 +696,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}else {
 			inCombat = false;
 			if(heroBehaviour.InCombat)
-				heroBehaviour.InCombat = false;;
+				heroBehaviour.InCombat = false;
 			Debug.Log("I'm dead YO!!!!!!!!! - Darth Vader");
-			Destroy(gameObject);
+			anim.SetTrigger("Death");
+			isAlive=false;
 		}
 	}
 
@@ -708,7 +713,8 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		agent.Resume();
 		agent.SetDestination (destinationPos);
 		agent.speed = 8;
-		UpdateAnimations (true, false, false, true, false);
+		anim.SetBool ("isWalking", true);
+		//UpdateAnimations (true, false, false, true, false);
 	}
 	
 	void RandomWalk()
@@ -716,7 +722,8 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		agent.Resume();
 		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
 		agent.speed = 3.5f;
-		UpdateAnimations (true, false, false, true, false);
+		//UpdateAnimations (true, false, false, true, false);
+		anim.SetBool ("isWalking", true);
 		time = Time.time;
 	}
 
