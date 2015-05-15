@@ -179,7 +179,17 @@ public class HeroBehaviour : MonoBehaviour {
 		foreach (Belief belief in beliefs) {
 			if(!alreadyInDesires(belief, newDesires)){
 				if(belief.Type == (int)heroBeliefTypes.See){
+					if(belief.BeliefObject.CompareTag("PowerUP")){
+						newDesires.Add(new Desire((int)heroDesireTypes.Pick,"Pick Power UP", belief.BeliefObject, 0.4f));
+					}else if(belief.BeliefObject.CompareTag("Citizen")){
+						if(belief.BeliefObject.name.Equals("Crush")){
+							newDesires.Add(new Desire((int)heroDesireTypes.HealCrush, "Heal Crush", belief.BeliefObject, 0.15f));
+						}else{
+							newDesires.Add(new Desire((int)heroDesireTypes.Save, "Save Citizen", belief.BeliefObject, 0.25f));
+						}
+					}else if(belief.BeliefObject.CompareTag("Villain")){
 
+					}
 				}else if(belief.Type == (int)heroBeliefTypes.Touching){
 
 				}else if(belief.Type == (int)heroBeliefTypes.CanUseSuperSpeed){

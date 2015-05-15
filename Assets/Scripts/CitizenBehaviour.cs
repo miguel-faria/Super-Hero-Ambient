@@ -262,7 +262,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	void Run()
 	{
 		agent.speed = 8;
-		Debug.Log ("AHAHASHHAAHSLDJAÇSDJÇA");
+		//Debug.Log ("AHAHASHHAAHSLDJAÇSDJÇA");
 		anim.SetFloat ("Speed", 8f);
 		agent.SetDestination(direction.normalized);
 		time = Time.time;
