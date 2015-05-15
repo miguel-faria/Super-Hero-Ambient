@@ -4,61 +4,45 @@ using System.Collections;
 using System.Collections.Generic;
 using SuperHeroAmbient;
 
-//Behaviour Class
-public class ConverterVillainBehaviour : MonoBehaviour
+public class StrikerVillainBehaviour : MonoBehaviour
 {
 	public Slider health;
-	public Text outputConvertedCitizens;
+	public Text outputKilledCitizens;
 	public Text outputRemainingCitizens;
-	public Text inputKilledCitizens;
+	public Text inputConvertedCitizens;
 	public int startingLife;
-	int remainingCitizens;
-	int convertedCitizens;
-	int killedCitizens;
 	int life;
+	int killedCitizens;
+	int convertedCitizens;
+	int remainingCitizens;
+	bool recievedMessage;
+	bool isAlive;
+	bool inCombat;
+	bool isFollowing;
+	bool updatedIntention;
 	float lastDecisionTime;
 	float time;
 	float citizenInViewTime;
 	float convertTime;
 	float attackTime;
 	float askForHelpTime;
-	bool isFollowing;
-	bool inCombat;
-	bool isAlive;
-	bool citizenInView = false;
-	bool updatedIntention;
-
-	GameObject followedObject;
-	GameObject hero;
-	HeroBehaviour heroBehaviour;
-	Vector3 citizenPos = new Vector3();
-	GameObject[] citizens = null;
-	CitizenBehaviour citizenSc = null;
 
 	Animator anim;
 	NavMeshAgent agent;
 	AnimatorStateInfo state;
 	Transform[] destinations;
 
+	GameObject converter;
+	GameObject hero;
+	HeroBehaviour heroBehaviour;
+	GameObject[] citizens;
+	CitizenBehaviour citizenSc;
+	GameObject followedObject;
+
 	List<Perception> screamPerceps = new List<Perception>();
 	List<Belief> beliefs = new List<Belief>();
 	List<Desire> desires = new List<Desire>();
 	Intention intention;
-
-	//Event Methods
-	public delegate void AskForHelp(GameObject asker);
-	public static event AskForHelp OnAskHelp;
-
-	//Getters and Setters
-
-	public bool IsFollowing {
-		get {
-			return isFollowing;
-		}
-		set {
-			isFollowing = value;
-		}
-	}
 
 	public bool InCombat {
 		get {
@@ -69,19 +53,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 	}
 
-	public bool IsAlive {
-		get {
-			return isAlive;
-		}
-		set {
-			isAlive = value;
-		}
-	}
-
 	void onEnable(){
 		CitizenBehaviour.OnAttack += HeardScream;
 	}
-
+	
 	void onDisable(){
 		CitizenBehaviour.OnAttack -= HeardScream;
 	}
@@ -94,40 +69,42 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		health.value = startingLife;
 		isAlive = true;
 		inCombat = false;
-		convertedCitizens = 0;
-		outputConvertedCitizens.text = "" + convertedCitizens;
+		killedCitizens = 0;
+		outputKilledCitizens.text = "" + killedCitizens;
 		hero = GameObject.FindGameObjectWithTag ("Hero");
+		converter = GameObject.Find ("ConverterVillain");
 		heroBehaviour = hero.GetComponent<HeroBehaviour> ();
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
-
+		
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		citizens = GameObject.FindGameObjectsWithTag ("Citizen");
-
+		
 		int objLength = objects.Length;
 		destinations = new Transform[objLength];
 		for (int i = 0; i < objLength; i++)
 			destinations [i] = objects [i].transform ;
-
+		
 		float min_dist = float.MaxValue;
 		int index = 0;
-
+		
 		for (int i = 0; i < destinations.Length; i++) {
 			if (destinations [i].position.magnitude < min_dist) {
 				index = i;
 				min_dist = destinations [i].position.magnitude;
 			}
 		}
-
+		
 		followedObject = destinations [index].gameObject;
 		agent.SetDestination (followedObject.transform.position);
 		intention = new Intention ((int)villainIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
+		recievedMessage = false;
 		isFollowing = true;
 		updatedIntention = true;
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
-
+		
 		lastDecisionTime = Time.time;
 		time = Time.time;
 		citizenInViewTime = float.MaxValue;
@@ -139,83 +116,38 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		if (isAlive) {
-			remainingCitizens = int.Parse (outputRemainingCitizens.text);
-			killedCitizens = int.Parse (inputKilledCitizens.text);
-			beliefs = updateBeliefs (beliefs);
-			
-			if (intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)) {
-				executeIntention (intention);
-			} else {
-				desires = updateDesires (beliefs, desires);
-				intention = updateIntention (beliefs, desires, intention);
-				updatedIntention = true;
-				executeIntention (intention);
-				lastDecisionTime = Time.time;
-			}
+		remainingCitizens = int.Parse (outputRemainingCitizens.text);
+		convertedCitizens = int.Parse (inputConvertedCitizens.text);
+		beliefs = updateBeliefs(beliefs);
+		
+		if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
+			executeIntention(intention);
 		}
-
-		//updateAnimation (intention.IntentObject);
+		else {
+			desires = updateDesires(beliefs, desires);
+			intention = updateIntention(beliefs, desires, intention);
+			updatedIntention = true;
+			executeIntention(intention);
+			lastDecisionTime = Time.time;
+		}
 	}
-
-	/*void updateAnimation (GameObject destinationObject)
-	{
-		if (!citizenInView && !(Time.time - citizenInViewTime >= 1f)) {
-			StopFollowing ();
-			return;
-		}
-		if (citizenInView && CitizenIsDead ()) {
-			KilledCitizen ();
-			Debug.Log ("killed");
-			return;
-		}
-		if ((citizenInView || Time.time - citizenInViewTime >= 1f) && !citizenSc.IsEvil() && !CitizenInRange ()) {
-			Follow ();
-			return;
-		}
-		if (citizenInView && CitizenInRange() && !citizenSc.IsEvil()) {
-			Convert ();
-			return;
-		}
-		if (noPerception && Time.time - time >= 5f) {
-			Debug.Log ("noperception");
-			RandomWalk ();
-			return;
-		}
-		
-		state = anim.GetCurrentAnimatorStateInfo (0);
-		if (Input.GetKeyDown ("space")) {
-			agent.Stop();
-			anim.SetTrigger ("Laugh");
-			anim.SetBool("isWalking",false);
-			return;
-		}
-		
-		if (state.IsName("idle")) {
-			agent.Resume();
-			agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
-			anim.SetBool("isWalking",true);
-			return;
-		}
-	}*/
-
 
 	/***********************************************************************
 	 ********************** BDI Architechture Methods **********************
 	 ***********************************************************************/
-
+	
 	void executeIntention(Intention intention){
 		if (updatedIntention) {
-			Debug.Log ("Coverter Villain Executing Intention: " + intention.Description);
+			Debug.Log ("Striker Villain Executing Intention: " + intention.Description);
 			updatedIntention = false;
 		}
-
+		
 		if (intention.IntentObject == null) {
 			intention.Possible = false;
 			intention.DistanceToDestination = float.MaxValue;
 			return;
 		}
-
+		
 		if (intention.Type == (int)villainIntentionTypes.Attack) {
 			if (HeroIsDead ()) {
 				intention.Concluded = true;
@@ -228,45 +160,6 @@ public class ConverterVillainBehaviour : MonoBehaviour
 					intention.Possible = false;
 					inCombat = false;
 					intention.DistanceToDestination = float.MaxValue;
-				}
-			}
-		} else if (intention.Type == (int)villainIntentionTypes.Convert) {
-			citizenSc = (CitizenBehaviour)intention.IntentObject.GetComponent (typeof(CitizenBehaviour));
-			citizenPos = intention.IntentObject.transform.position;
-			followedObject = intention.IntentObject;
-			if (CitizenInRange (intention.IntentObject)) {
-				if (CitizenIsEvil (citizenSc)) {
-					intention.Concluded = true;
-					intention.DistanceToDestination = float.MaxValue;
-				} else if (CitizenIsDead (citizenSc)) {
-					intention.Possible = false;
-					intention.DistanceToDestination = float.MaxValue;
-				} else if (((Time.time - convertTime) >= 1.0f)) {
-					if(Random.Range(1,11) > 6){
-						Debug.Log("Failed Convertion");
-						Convert (citizenSc, false);
-					} else{
-						Convert (citizenSc, true);
-						for (int i = 0; i < citizens.Length; i++) {
-							if ((citizens [i] != intention.IntentObject) && (CitizenInRange (citizens [i])) && 
-								(!CitizenIsEvil ((CitizenBehaviour)citizens [i].GetComponent (typeof(CitizenBehaviour))))) {
-								if(Random.Range(1,11) > 6){
-									Debug.Log("Failed Convertion");
-									Convert ((CitizenBehaviour)citizens [i].GetComponent (typeof(CitizenBehaviour)), false);
-								} else{
-									Convert ((CitizenBehaviour)citizens [i].GetComponent (typeof(CitizenBehaviour)), true);
-								}
-							}
-						}
-						convertTime = Time.time;
-					}
-				}
-			} else {
-				if (CitizenIsDead (citizenSc)) {
-					intention.Possible = false;
-					intention.DistanceToDestination = float.MaxValue;
-				} else {
-					Follow (citizenPos);
 				}
 			}
 		} else if (intention.Type == (int)villainIntentionTypes.Flee) {
@@ -284,44 +177,12 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			}
 		} else if (intention.Type == (int)villainIntentionTypes.FollowSound) {
 			if ((intention.SoundOrigin != Vector3.zero) &&
-				(Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) == 0)){
+			    (Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) == 0)){
 				intention.Concluded = true;
 				intention.DistanceToDestination = float.MaxValue;
 			}else{
 				followedObject = intention.IntentObject;
 				Follow(followedObject.transform.position);
-			}
-		} else if(intention.Type == (int)villainIntentionTypes.KillHero) { 
-			if(HeroIsDead()){
-				intention.Concluded = true;
-				intention.DistanceToDestination = float.MaxValue;
-				if(inCombat)
-					inCombat = false;
-			} else if(HeroInAttackRange()){
-				Attack(hero);
-				inCombat = true;
-			}else{
-				followedObject = intention.IntentObject;
-				Follow(followedObject.transform.position);
-			}
-		} else if(intention.Type == (int)villainIntentionTypes.AskHelp) { 
-			if (!HeroInRange ()) {
-				intention.Concluded = true;
-				intention.DistanceToDestination = float.MaxValue;
-				StopFollowing ();
-			} else if (HeroIsDead ()) {
-				intention.Possible = false;
-				intention.DistanceToDestination = float.MaxValue;
-				StopFollowing ();
-			} else {
-				if((OnAskHelp != null) && ((Time.time - askForHelpTime) > 0.5f)){
-					OnAskHelp(this.gameObject);
-					askForHelpTime = Time.time;
-				}
-				Vector3 objective = hero.transform.position - transform.position;
-				Follow (objective.normalized);
-				if(inCombat)
-					inCombat = false;
 			}
 		} else if (intention.Type == (int)villainIntentionTypes.Move) {
 			if (desires.Count != 0){
@@ -338,73 +199,6 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 	}
 	
-	List<Perception> getCurrentPerceptions(){
-		List<Perception> perceptions;
-		if (screamPerceps != null) {
-			perceptions = new List<Perception> (screamPerceps);
-			screamPerceps = new List<Perception> ();
-		} else {
-			perceptions = new List<Perception> ();
-		}
-		GameObject[] citizens = GameObject.FindGameObjectsWithTag ("Citizen");
-		
-		for (int i = 0; i < citizens.Length; i++) {
-			if(inSight(citizens[i]))
-				perceptions.Add(new Perception(citizens[i], (int)villainPerceptionTypes.Saw));
-		}
-		
-		if (isTouching (hero)) {
-			perceptions.Add (new Perception (hero, (int)villainPerceptionTypes.Touched));
-		} else if (inSight (hero)) {
-			perceptions.Add (new Perception (hero, (int)villainPerceptionTypes.Saw));
-		}
-
-		return perceptions;
-	}
-
-	List<Belief> updateBeliefs(List<Belief> oldBeliefs){
-		List<Belief> newBeliefs = new List<Belief> (oldBeliefs);
-		List<Perception> perceptions = getCurrentPerceptions ();
-
-		foreach (Perception percep in perceptions) {
-			if(!alreadyInBeliefs(percep, newBeliefs)){
-				if (percep.Type == (int)villainPerceptionTypes.Heard){
-					newBeliefs.Add(new HearScreamBelief(percep.ObjectPercepted, percep.ObjectPercepted.transform.position));
-				} else if (percep.Type == (int)villainPerceptionTypes.Saw){
-					if(percep.Tag.Equals("Hero")){
-						newBeliefs.Add(new SeeHeroBelief(percep.ObjectPercepted));
-					}else if(percep.Tag.Equals("Citizen")){
-						newBeliefs.Add(new SeeCitizenBelief(percep.ObjectPercepted));
-					}
-				} else if (percep.Type == (int)villainPerceptionTypes.Touched && percep.Tag.Equals("Hero")){
-					newBeliefs.Add(new TouchHeroBelief(percep.ObjectPercepted));
-				}
-			}
-		}
-
-		return newBeliefs;
-	}
-
-	List<Desire> updateDesires(List<Belief> beliefs, List<Desire> oldDesires){
-		List<Desire> newDesires = new List<Desire> (oldDesires);
-
-		foreach (Belief belief in beliefs) {
-			if(!alreadyInDesires(belief, newDesires)){
-				if(belief.Type == (int)villainBeliefTypes.Hear){
-					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 0.25f));
-				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject)){
-					newDesires.Add(new Desire((int)villainDesireTypes.Convert, "Convert Citizen", belief.BeliefObject, 0.25f));
-				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
-					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee from Hero", belief.BeliefObject, 0.3f));
-				}else if(belief.Type == (int)villainBeliefTypes.Touching){
-					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight the Hero", belief.BeliefObject, 0.2f));
-               	}
-			}
-		}
-
-		return newDesires;
-	}
-
 	Intention updateIntention(List<Belief> beliefs, List<Desire> desires, Intention oldIntention){
 		Intention newIntention;
 		if (intention.Type != (int)villainIntentionTypes.Move)
@@ -415,31 +209,36 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		Vector3 currentPosition = this.transform.position;
 		Desire chosenDesire = null;
 		Belief originatingBelief = null;
-
+		
 		if (desires.Count != 0) {
 			if (!inCombat && ((remainingCitizens + convertedCitizens + killedCitizens) < (Mathf.FloorToInt (0.4f * heroBehaviour.startingCitizens)))
-				&& (existsBelief<SeeHeroBelief> ((int)villainBeliefTypes.See, beliefs)) && !HeroIsDead()) {
-				newIntention = new Intention ((int)villainIntentionTypes.KillHero, "Kill the Hero", hero,
+			    && (existsBelief<SeeHeroBelief> ((int)villainBeliefTypes.See, beliefs)) && !HeroIsDead()) {
+				newIntention = new Intention ((int)villainIntentionTypes.Attack, "Attack the Hero", hero,
 				                              Vector3.Distance (currentPosition, hero.transform.position));
 			} else if (inCombat && (life < 40) && existsDesire ((int)villainDesireTypes.Flee, desires) && (hero != null)) {
-				newIntention = new Intention ((int)villainIntentionTypes.AskHelp, "Flee from Combat and Ask for Help", hero, 
+				newIntention = new Intention ((int)villainIntentionTypes.Flee, "Flee from Combat", hero, 
 				                              Vector3.Distance (currentPosition, hero.transform.position));
 			} else {
 				foreach (Desire desire in desires) {
-					if (Vector3.Distance (this.transform.position, desire.ObjectiveDestination) * desire.PreferenceFactor < newIntention.DistanceToDestination) {
-						if (desire.Type == (int)villainDesireTypes.Convert){
-							newIntention = new Intention ((int)villainIntentionTypes.Convert, "Convert Citizen", desire.SubjectObject,
-							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
+					 if (Vector3.Distance (this.transform.position, desire.ObjectiveDestination) < newIntention.DistanceToDestination) {
+						if (desire.Type == (int)villainDesireTypes.DefendOtherVillain){
+							newIntention = new Intention((int)villainIntentionTypes.Move, "Move To Villain", desire.SubjectObject,
+							                             Vector3.Distance(currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
 						else if (desire.Type == (int)villainDesireTypes.DefendAgainstHero){
 							newIntention = new Intention ((int)villainIntentionTypes.Attack, "Attack Hero", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
-							chosenDesire = desire;
+								chosenDesire = desire;
 						}
 						else if (desire.Type == (int)villainDesireTypes.Flee){
 							newIntention = new Intention ((int)villainIntentionTypes.Flee, "Flee from Hero", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
+							chosenDesire = desire;
+						}
+						else if (desire.Type == (int)villainDesireTypes.AttackCitizen){
+							newIntention = new Intention ((int)villainIntentionTypes.Attack, "Attack Citizen", desire.SubjectObject,
+							                               Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
 						else if (desire.Type == (int)villainDesireTypes.Follow){
@@ -463,16 +262,92 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			newIntention = new Intention((int)villainIntentionTypes.Move, "Move Randomly", dest,
 			                             Vector3.Distance(currentPosition, dest.transform.position));
 		}
-
+		
 		return newIntention;
 	}
+	
+	List<Perception> getCurrentPerceptions(){
+		List<Perception> perceptions;
+		if (screamPerceps != null) {
+			perceptions = new List<Perception> (screamPerceps);
+			screamPerceps = new List<Perception> ();
+		} else {
+			perceptions = new List<Perception> ();
+		}
+		GameObject[] citizens = GameObject.FindGameObjectsWithTag ("Citizen");
+		
+		for (int i = 0; i < citizens.Length; i++) {
+			if(inSight(citizens[i]))
+				perceptions.Add(new Perception(citizens[i], (int)villainPerceptionTypes.Saw));
+		}
 
+		if (recievedMessage) {
+			perceptions.Add (new Perception (converter, (int)villainPerceptionTypes.Message));
+			recievedMessage = false;
+		}
+
+		if (isTouching (hero)) {
+			perceptions.Add (new Perception (hero, (int)villainPerceptionTypes.Touched));
+		} else if (inSight (hero)) {
+			perceptions.Add (new Perception (hero, (int)villainPerceptionTypes.Saw));
+		}
+		
+		return perceptions;
+	}
+	
+	List<Belief> updateBeliefs(List<Belief> oldBeliefs){
+		List<Belief> newBeliefs = new List<Belief> (oldBeliefs);
+		List<Perception> perceptions = getCurrentPerceptions ();
+		
+		foreach (Perception percep in perceptions) {
+			if(!alreadyInBeliefs(percep, newBeliefs)){
+				if (percep.Type == (int)villainPerceptionTypes.Heard){
+					newBeliefs.Add(new HearScreamBelief(percep.ObjectPercepted, percep.ObjectPercepted.transform.position));
+				} else if (percep.Type == (int)villainPerceptionTypes.Saw){
+					if(percep.Tag.Equals("Hero")){
+						newBeliefs.Add(new SeeHeroBelief(percep.ObjectPercepted));
+					}else if(percep.Tag.Equals("Citizen")){
+						newBeliefs.Add(new SeeCitizenBelief(percep.ObjectPercepted));
+					}
+				} else if (percep.Type == (int)villainPerceptionTypes.Touched && percep.Tag.Equals("Hero")){
+					newBeliefs.Add(new TouchHeroBelief(percep.ObjectPercepted));
+				} else if (percep.Type == (int) villainPerceptionTypes.Message){
+					newBeliefs.Add (new ConverterInDangerBelief(percep.ObjectPercepted));
+				}
+			}
+		}
+		
+		return newBeliefs;
+	}
+	
+	List<Desire> updateDesires(List<Belief> beliefs, List<Desire> oldDesires){
+		List<Desire> newDesires = new List<Desire> (oldDesires);
+		
+		foreach (Belief belief in beliefs) {
+			if(!alreadyInDesires(belief, newDesires)){
+				if(belief.Type == (int)villainBeliefTypes.Hear){
+					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 1));
+				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject) && ImmuneCitizen(belief.BeliefObject)){
+					newDesires.Add(new Desire((int)villainDesireTypes.AttackCitizen, "Attack Citizen", belief.BeliefObject, 1));
+				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
+					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee From Hero", belief.BeliefObject, 1));
+				}else if(belief.Type == (int)villainBeliefTypes.Touching){
+					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight the Hero", belief.BeliefObject, 1));
+				}else if(belief.Type == (int)villainBeliefTypes.ConverterInDanger){
+					newDesires.Add(new Desire((int)villainDesireTypes.DefendOtherVillain, "Fight the Hero", belief.BeliefObject, 1));
+				}					
+			}
+		}
+		
+		return newDesires;
+	}
+	
 	Belief findOriginatingBelief(Desire desire, List<Belief> beliefsList){
 		Belief origBelief = null;
 		foreach (Belief belief in beliefsList) {
 			if((((belief.Type == (int)villainBeliefTypes.Hear) && (desire.Type == (int)villainDesireTypes.Follow)) || 
-			    ((belief.Type == (int)villainBeliefTypes.See) && ((desire.Type == (int)villainDesireTypes.Convert) || 
-		                                           			(desire.Type == (int)villainDesireTypes.Flee))) ||
+			    ((belief.Type == (int)villainBeliefTypes.See) && ((desire.Type == (int)villainDesireTypes.AttackCitizen) || 
+			                                                  (desire.Type == (int)villainDesireTypes.Flee))) ||
 			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.DefendAgainstHero)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				origBelief = belief;
@@ -480,24 +355,26 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 		return origBelief;
 	}
-
+	
 	bool alreadyInBeliefs(Perception perception, List<Belief> beliefsList){
 		foreach (Belief belief in beliefsList) {
 			if ((((belief.Type == (int)villainBeliefTypes.Hear) && (perception.Type == (int)villainPerceptionTypes.Heard)) ||
-				((belief.Type == (int)villainBeliefTypes.See) && (perception.Type == (int)villainPerceptionTypes.Saw)) ||
-				((belief.Type == (int)villainBeliefTypes.Touching) && (perception.Type == (int)villainPerceptionTypes.Touched)))
-				&& (belief.BeliefObject.Equals (perception.ObjectPercepted))) {
-				return true;
+			     ((belief.Type == (int)villainBeliefTypes.See) && (perception.Type == (int)villainPerceptionTypes.Saw)) ||
+			     ((belief.Type == (int)villainBeliefTypes.Touching) && (perception.Type == (int)villainPerceptionTypes.Touched)))
+			    && (belief.BeliefObject.Equals (perception.ObjectPercepted)) ||
+			    ((belief.Type == (int)villainBeliefTypes.ConverterInDanger) && (perception.Type == (int)villainPerceptionTypes.Message))) {
+					return true;
 			}
 		}
 		return false;
 	}
-
+	
 	bool alreadyInDesires(Belief belief, List<Desire> desiresList){
 		foreach(Desire desire in desiresList){
 			if((((belief.Type == (int)villainBeliefTypes.Hear) && (desire.Type == (int)villainDesireTypes.Follow)) || 
 			    ((belief.Type == (int)villainBeliefTypes.See) && ((desire.Type == (int)villainDesireTypes.Convert) || 
-			                                           		(desire.Type == (int)villainDesireTypes.Flee))) ||
+			                                                  (desire.Type == (int)villainDesireTypes.Flee))) ||
+			    ((belief.Type == (int)villainBeliefTypes.ConverterInDanger) && (desire.Type == (int)villainDesireTypes.DefendOtherVillain)) ||
 			    ((belief.Type == (int)villainBeliefTypes.Touching) && (desire.Type == (int)villainDesireTypes.DefendAgainstHero)))
 			   && (desire.SubjectObject.Equals(belief.BeliefObject))){
 				return true;
@@ -505,17 +382,17 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 		return false;
 	}
-
+	
 	bool existsDesire(int desireType, List<Desire> desiresList){
-
+		
 		foreach(Desire desire in desiresList){
 			if(desire.Type == desireType)
 				return true;
 		}
-
+		
 		return false;
 	}
-
+	
 	bool existsBelief<T>(int beliefType, List<Belief> beliefList){
 		
 		foreach(Belief belief in beliefList){
@@ -525,20 +402,20 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		
 		return false;
 	}
-
-	/***************************************************************
-	 ************************* Sensor Methods **********************
-	 ***************************************************************/
-
+	
+	/***********************************************************************
+	 ***************************** Sensor Methods **************************
+	 ***********************************************************************/
+	
 	bool HeroInRange(){
 		return ((Vector3.Distance(this.transform.position, hero.transform.position) < Definitions.HEROMAXVIEWDISTANCE) &&
 		        (!InSightOfHero(this.gameObject)));
 	}
-
+	
 	bool HeroInAttackRange(){
 		return isTouching(hero);
 	}
-
+	
 	bool InSightOfHero(GameObject other){
 		float distance = Vector3.Distance (hero.transform.position, other.transform.position);
 		Vector3 direction = other.transform.position - this.transform.position;
@@ -549,15 +426,15 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		} else {
 			return false;
 		}
-
+		
 	}
-
+	
 	bool CitizenInRange(GameObject citizen)
 	{
 		float distance = Vector3.Distance (this.transform.position, citizen.transform.position);
 		return (distance <= Definitions.AOEAREA);
 	}	
-
+	
 	bool alreadyConverted(GameObject citizen){
 		if (citizen.tag.Equals ("Citizen")) {
 			CitizenBehaviour citizenBehaviour = (CitizenBehaviour) citizen.GetComponent(typeof(CitizenBehaviour));
@@ -568,31 +445,33 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 	}
 
-	bool CitizenIsEvil(CitizenBehaviour citizen){
-		if (citizen.IsEvil())
-			return true;
-		else {
+	bool ImmuneCitizen(GameObject citizen){
+		if (citizen.tag.Equals ("Citizen")) {
+			CitizenBehaviour citizenBehaviour = (CitizenBehaviour)citizen.GetComponent (typeof(CitizenBehaviour));
+			return CitizenIsImmune (citizenBehaviour);
+		} else {
+			Debug.Log ("Only immune citizens can be attacked!");
 			return false;
 		}
 	}
 
+	bool CitizenIsImmune(CitizenBehaviour citizen) {
+		return (citizen.IsImmune ());
+	}
+
+	bool CitizenIsEvil(CitizenBehaviour citizen){
+		return (citizen.IsEvil ());
+	}
+	
 	bool CitizenIsDead (CitizenBehaviour citizen)
 	{
-		if (citizen.Life <= 0)
-			return true;
-		else {
-			return false;
-		}
+		return (citizen.Life <= 0);
 	}
-
+	
 	bool HeroIsDead(){
-		if (heroBehaviour.Life <= 0)
-			return true;
-		else {
-			return false;
-		}
+		return (heroBehaviour.Life <= 0);
 	}
-
+	
 	bool inSight(GameObject other){
 		// Create a vector from the enemy to the player and store the angle between it and forward.
 		Vector3 direction = other.transform.position - this.transform.position;
@@ -622,7 +501,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 		return false;
 	}
-	
+
 	void HeardScream(GameObject screamer){
 		float distance = Vector3.Distance (this.transform.position, screamer.transform.position);
 		if (distance > Definitions.AOEHEARINGAREA && distance < Definitions.VILLAINMAXHEARINGDISTANCE) {
@@ -630,23 +509,16 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 	}
 
-
-	/***************************************************************
-	 ************************ Actuator Methods *********************
-	 ***************************************************************/
-	/*void KilledCitizen ()
+	public void ReceivedMessage()
 	{
-		// Laugh
-		agent.Stop();
-		anim.SetTrigger ("Laugh");
-		anim.SetBool("isWalking",false);
-		
-		citizenInView = false;
-		noPerception = true;
-		citizenSc = null;
-		UpdateAnimations (false, false, false, true, false);
-	}*/
+		recievedMessage = true;
+	}
 	
+
+	
+	/***********************************************************************
+	 **************************** Actuator Methods *************************
+	 ***********************************************************************/
 	
 	void StopFollowing()
 	{
@@ -655,23 +527,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		followedObject = null;
 		time = float.MaxValue;
 	}
-	
-	void Convert (CitizenBehaviour citizen, bool success)
-	{
-		citizen.Converted (success);
-		if (success) {
-			if (citizen.IsEvil ()) {
-				remainingCitizens--;
-				outputRemainingCitizens.text = "" + remainingCitizens;
-				convertedCitizens++;
-				outputConvertedCitizens.text = "" + convertedCitizens;
-			}
-			anim.SetTrigger ("Convert");
-			agent.Stop ();
-			//UpdateAnimations (false, false, false, true, true);
-		}
-	}
-	
+
 	void Attack(GameObject attacked)
 	{
 		if (Time.time - attackTime >= 1f) {
@@ -692,7 +548,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			attackTime = Time.time;
 		}
 	}
-
+	
 	public void Attacked(int damage){
 		if (life > 0) {
 			life -= damage;
@@ -707,7 +563,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			isAlive=false;
 		}
 	}
-
+	
 	void StopAttacking() 
 	{
 		UpdateAnimations (false, false, false, true, false);
@@ -731,29 +587,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		anim.SetBool ("isWalking", true);
 		time = Time.time;
 	}
-
-//	void OnTriggerStay(Collider other)
-//	{
-//		if (other.gameObject.CompareTag ("Citizen")) {
-//			// Create a vector from the enemy to the player and store the angle between it and forward.
-//			Vector3 direction = other.transform.position - transform.position;
-//			float angle = Vector3.Angle (direction, transform.forward);
-//			
-//			// If the angle between forward and where the player is, is less than half the angle of view...
-//			if (angle < fieldOfViewAngle * 0.5f) {
-//				Transform citizen = other.gameObject.transform;
-//				citizenPos.Set (citizen.position.x, citizen.position.y, citizen.position.z);
-//				return;
-//			}
-//		}
-//	}
-//
-//	void OnTriggerExit(Collider other)
-//	{
-//		citizenInViewTime = Time.time;
-//		citizenInView = false;
-//	}
-
+	
 	void UpdateAnimations(bool walking, bool laughing, bool combat, bool alive, bool convert)
 	{
 		anim.SetBool ("isWalking", walking);

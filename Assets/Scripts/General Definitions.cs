@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 namespace SuperHeroAmbient{
 	
-	enum villainPerceptionTypes {Saw, Heard, Touched}
-	enum villainBeliefTypes {See, Hear, Touching}
+	enum villainPerceptionTypes {Saw, Heard, Touched, Message}
+	enum villainBeliefTypes {See, Hear, Touching, ConverterInDanger}
 	enum villainDesireTypes {Convert, Follow, DefendAgainstHero, AttackCitizen, DefendOtherVillain, Flee}
 	enum villainIntentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
 	enum heroPerceptionType {Saw, Heard, Touched, SuperSpeedAvailable}
@@ -109,6 +109,24 @@ namespace SuperHeroAmbient{
 				_beliefObject = value;
 			}
 		}
+	}
+
+	class ConverterInDangerBelief : Belief{
+		Vector3 _villainPosition;
+		
+		public ConverterInDangerBelief(GameObject villain) : base ((int)villainBeliefTypes.ConverterInDanger, "Converter is in danger", villain){
+			_villainPosition = villain.transform.position;
+		}
+		
+		public Vector3 CitizenPosition {
+			get {
+				return _villainPosition;
+			}
+			set {
+				_villainPosition = value;
+			}
+		}
+		
 	}
 	
 	class SeeCitizenBelief : Belief{

@@ -16,6 +16,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	public delegate void AttackedAction(GameObject gob);
 	public static event AttackedAction OnAttack;
 
+	bool immune = false;
 	bool noPerception = true;
 	bool isBeingAttacked = false;
 	bool isRunningFromVillain = false;
@@ -180,22 +181,31 @@ public class CitizenBehaviour : MonoBehaviour {
 		return (transformationState == 5);
 	}
 
-	public void Converted ()
+	public void Converted (bool success)
 	{
-		if (transformationState < 5) {
-			transformationState++;
-			Debug.Log ("Being transformed!!! More " + (5 - transformationState) + " to become evil!");
-			if(transformationState == 5){
-				//GameObject aura = GameObject.Find("ConvertionMagic");
-				//aura.SetActive(true);
+		if (success) {
+			if (transformationState < 5) {
+				transformationState++;
+				Debug.Log ("Being transformed!!! More " + (5 - transformationState) + " to become evil!");
+				if (transformationState == 5) {
+					//GameObject aura = GameObject.Find("ConvertionMagic");
+					//aura.SetActive(true);
 
-				Quaternion rotation = new Quaternion();
-				GameObject aura =(GameObject) Instantiate(MagicAura, transform.position, rotation);
-				aura.transform.SetParent(transform);
+					Quaternion rotation = new Quaternion ();
+					GameObject aura = (GameObject)Instantiate (MagicAura, transform.position, rotation);
+					aura.transform.SetParent (transform);
+				}
 			}
+			if (OnAttack != null)
+				OnAttack (this.gameObject);
+		} else {
+			immune = true;
 		}
-		if (OnAttack != null)
-			OnAttack (this.gameObject);
+	}
+
+	public bool IsImmune()
+	{
+		return immune;
 	}
 
 	public void Attacked()
@@ -210,7 +220,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	void Run()
 	{
 		agent.speed = 8;
-		//Debug.Log (this.gameObject.name + " - AHAHASHHAAHSLDJAÇSDJÇA");
+		Debug.Log ("AHAHASHHAAHSLDJAÇSDJÇA");
 		anim.SetFloat ("Speed", 8f);
 		agent.SetDestination(direction.normalized);
 	}
