@@ -29,6 +29,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	bool updatedIntention;
 	bool procNeed = true;
 	bool converting;
+	bool isRoaming;
 
 	GameObject followedObject;
 	GameObject hero;
@@ -141,8 +142,22 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
+		citizens = GameObject.FindGameObjectsWithTag ("Citizen");
+		beliefs = updateBeliefs (beliefs);
+		desires = updateDesires (beliefs, desires);
+
 
 		StartCoroutine (UpdateBehaviour ());
+		if (intention.Type == 0)
+			isRoaming = true; else isRoaming = false;
+
+		if (isRoaming) {
+			
+			float dist = Vector3.Distance(this.transform.position, this.GetComponent<NavMeshAgent>().destination);
+			//Debug.Log ("Wherever the wind takes me: " + dist);
+			if (dist < 2) agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
+			
+		}
 
 		//updateAnimation (intention.IntentObject);
 	}
@@ -294,14 +309,15 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			if (!HeroInRange ()) {
 				intention.Concluded = true;
 				intention.DistanceToDestination = float.MaxValue;
-				StopFollowing ();
+				agent.Stop();
+				followedObject = null;
 			} else if (HeroIsDead ()) {
 				intention.Possible = false;
 				intention.DistanceToDestination = float.MaxValue;
-				StopFollowing ();
+				agent.Stop();
+				followedObject = null;
 			} else {
-				Vector3 objective = hero.transform.position - transform.position;
-				Follow (objective.normalized);
+				runFrom(hero);
 			}
 		} else if (intention.Type == (int)villainIntentionTypes.FollowSound) {
 			if ((intention.SoundOrigin != Vector3.zero) &&
@@ -384,6 +400,17 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	}
 
 	List<Belief> updateBeliefs(List<Belief> oldBeliefs){
+
+		foreach (Belief belief in oldBeliefs) {
+			
+			
+
+			if(belief.BeliefObject == null) 
+				oldBeliefs.Remove(belief);
+			
+			
+		}
+
 		List<Belief> newBeliefs = new List<Belief> (oldBeliefs);
 		List<Perception> perceptions = getCurrentPerceptions ();
 
@@ -702,6 +729,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 			//UpdateAnimations (false, false, false, true, true);
 		}
+
 	}
 	
 	void Attack(GameObject attacked)
@@ -719,10 +747,11 @@ public class ConverterVillainBehaviour : MonoBehaviour
 					damage = Random.Range(1,6);
 				else
 					damage = Random.Range(6,11);
-				heroBehaviour.Attacked(this.gameObject, "Converter", damage);
+				heroBehaviour.Attacked(this.gameObject, damage);
 			}
 			attackTime = Time.time;
 		}
+
 	}
 
 	public void Attacked(int damage){
@@ -751,6 +780,8 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		agent.SetDestination (destinationPos);
 		agent.speed = 8;
 		anim.SetBool ("isWalking", true);
+		anim.SetBool ("isRunning", true);
+
 		//UpdateAnimations (true, false, false, true, false);
 	}
 	
@@ -761,8 +792,20 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		agent.speed = 3.5f;
 		//UpdateAnimations (true, false, false, true, false);
 		anim.SetBool ("isWalking", true);
+		anim.SetBool ("isRunning", false);
 		time = Time.time;
+
 	}
+
+
+	void runFrom(GameObject run){
+
+		Vector3 objective = run.transform.position - transform.position;
+		agent.SetDestination(objective.normalized);
+
+
+	}
+
 
 //	void OnTriggerStay(Collider other)
 //	{

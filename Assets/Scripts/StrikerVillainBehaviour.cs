@@ -19,13 +19,17 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	bool isAlive;
 	bool inCombat;
 	bool isFollowing;
+	bool isRoaming = false;
 	bool updatedIntention;
+	bool procNeed = true;
+	bool attacking;
 	float lastDecisionTime;
 	float time;
 	float citizenInViewTime;
 	float convertTime;
 	float attackTime;
 	float askForHelpTime;
+
 
 	Animator anim;
 	NavMeshAgent agent;
@@ -116,20 +120,53 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		remainingCitizens = int.Parse (outputRemainingCitizens.text);
-		convertedCitizens = int.Parse (inputConvertedCitizens.text);
-		beliefs = updateBeliefs(beliefs);
-		
-		if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
-			executeIntention(intention);
+		citizens = GameObject.FindGameObjectsWithTag ("Citizen");
+		beliefs = updateBeliefs (beliefs);
+		desires = updateDesires (beliefs, desires);
+		intention = updateIntention(beliefs, desires, intention);
+		StartCoroutine (updateRoutine());
+
+		if (isRoaming) {
+
+			float dist = Vector3.Distance(this.transform.position, this.GetComponent<NavMeshAgent>().destination);
+			//Debug.Log ("Wherever the wind takes me: " + dist);
+			if (dist < 2) agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
+
 		}
-		else {
-			desires = updateDesires(beliefs, desires);
-			intention = updateIntention(beliefs, desires, intention);
-			updatedIntention = true;
-			executeIntention(intention);
-			lastDecisionTime = Time.time;
+
+
+
+
+	}
+
+
+	IEnumerator updateRoutine (){
+
+		if (procNeed) {
+			procNeed = false;
+			remainingCitizens = int.Parse (outputRemainingCitizens.text);
+			convertedCitizens = int.Parse (inputConvertedCitizens.text);
+			beliefs = updateBeliefs(beliefs);
+			
+			if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
+				executeIntention(intention);
+			}
+			else {
+				desires = updateDesires(beliefs, desires);
+				intention = updateIntention(beliefs, desires, intention);
+				updatedIntention = true;
+				executeIntention(intention);
+				lastDecisionTime = Time.time;
+			}
+
+			if(attacking){
+				yield return new WaitForSeconds(2);
+				attacking=false;}
+
+			procNeed = true;
 		}
+
+
 	}
 
 	/***********************************************************************
@@ -149,19 +186,63 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		}
 		
 		if (intention.Type == (int)villainIntentionTypes.Attack) {
-			if (HeroIsDead ()) {
-				intention.Concluded = true;
-				inCombat = false;
-				intention.DistanceToDestination = float.MaxValue;
-			} else {
-				if (Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) <= Definitions.MAXTOUCHINGDISTANCE)
-					Attack (hero);
-				else {
-					intention.Possible = false;
+			if (intention.IntentObject.CompareTag ("Hero")) {
+				if (HeroIsDead ()) {
+					intention.Concluded = true;
 					inCombat = false;
 					intention.DistanceToDestination = float.MaxValue;
+				} else {
+					if (Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) <= Definitions.MAXTOUCHINGDISTANCE)
+						Attack (hero);
+					else {
+						intention.Possible = false;
+						inCombat = false;
+						intention.DistanceToDestination = float.MaxValue;
+					}
+				}
+			} else {
+				GameObject citizen = intention.IntentObject;
+				citizenSc = (CitizenBehaviour)citizen.GetComponent (typeof(CitizenBehaviour));
+				if (CitizenIsDead (citizenSc)) {
+					intention.Concluded = true;
+					inCombat = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else {
+					if (Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) <= Definitions.MAXTOUCHINGDISTANCE)
+						Attack (citizen);
+					else {
+						intention.Possible = false;
+						inCombat = false;
+						intention.DistanceToDestination = float.MaxValue;
+					}
 				}
 			}
+		} else if (intention.Type == (int)villainIntentionTypes.Approach) {
+			if(intention.IntentObject.CompareTag("Hero")){
+				if (HeroIsDead ()) {
+					intention.Concluded = true;
+					intention.DistanceToDestination = float.MaxValue;
+				} else if (Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) <= Definitions.MAXTOUCHINGDISTANCE){
+					intention.Concluded = true;
+					intention.DistanceToDestination = float.MaxValue;
+				} else {
+					Follow(hero.transform.position);
+				}
+			}else {
+				GameObject citizen = intention.IntentObject;
+				citizenSc = (CitizenBehaviour)citizen.GetComponent (typeof(CitizenBehaviour));
+				if (CitizenIsDead (citizenSc)) {
+					intention.Concluded = true;
+					inCombat = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else if (Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) <= Definitions.MAXTOUCHINGDISTANCE){
+					intention.Concluded = true;
+					intention.DistanceToDestination = float.MaxValue;
+				} else {
+					Follow(citizen.transform.position);
+				}
+			}
+
 		} else if (intention.Type == (int)villainIntentionTypes.Flee) {
 			if (!HeroInRange ()) {
 				intention.Concluded = true;
@@ -212,8 +293,12 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		
 		if (desires.Count != 0) {
 			if (!inCombat && ((remainingCitizens + convertedCitizens + killedCitizens) < (Mathf.FloorToInt (0.4f * heroBehaviour.startingCitizens)))
-			    && (existsBelief<SeeHeroBelief> ((int)villainBeliefTypes.See, beliefs)) && !HeroIsDead()) {
+			    && (existsBelief<TouchHeroBelief> ((int)villainBeliefTypes.Touching, beliefs)) && !HeroIsDead()) {
 				newIntention = new Intention ((int)villainIntentionTypes.Attack, "Attack the Hero", hero,
+				                              Vector3.Distance (currentPosition, hero.transform.position));
+			} else if (!inCombat && ((remainingCitizens + convertedCitizens + killedCitizens) < (Mathf.FloorToInt (0.4f * heroBehaviour.startingCitizens)))
+	           				 && (existsBelief<SeeHeroBelief> ((int)villainBeliefTypes.See, beliefs)) && !HeroIsDead()) {
+				newIntention = new Intention ((int)villainIntentionTypes.Approach, "Approach the Hero", hero,
 				                              Vector3.Distance (currentPosition, hero.transform.position));
 			} else if (inCombat && (life < 40) && existsDesire ((int)villainDesireTypes.Flee, desires) && (hero != null)) {
 				newIntention = new Intention ((int)villainIntentionTypes.Flee, "Flee from Combat", hero, 
@@ -226,21 +311,25 @@ public class StrikerVillainBehaviour : MonoBehaviour
 							                             Vector3.Distance(currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
-						else if (desire.Type == (int)villainDesireTypes.DefendAgainstHero){
+						else if (desire.Type == (int)villainDesireTypes.DefendAgainstHero && HeroInRange()){
 							newIntention = new Intention ((int)villainIntentionTypes.Attack, "Attack Hero", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 								chosenDesire = desire;
-						}
-						else if (desire.Type == (int)villainDesireTypes.Flee){
-							newIntention = new Intention ((int)villainIntentionTypes.Flee, "Flee from Hero", desire.SubjectObject,
+						}else if (desire.Type == (int)villainDesireTypes.DefendAgainstHero && !HeroInRange()){
+							newIntention = new Intention ((int)villainIntentionTypes.Approach, "Approach Hero", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
-						else if (desire.Type == (int)villainDesireTypes.AttackCitizen){
+						else if (desire.Type == (int)villainDesireTypes.AttackCitizen && CitizenInRange(desire.SubjectObject)){
 							newIntention = new Intention ((int)villainIntentionTypes.Attack, "Attack Citizen", desire.SubjectObject,
 							                               Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
-						}
+						} 
+						else if (desire.Type == (int)villainDesireTypes.AttackCitizen && !CitizenInRange(desire.SubjectObject)){
+							newIntention = new Intention ((int)villainIntentionTypes.Approach, "Approach Citizen", desire.SubjectObject,
+							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
+							chosenDesire = desire;
+						} 
 						else if (desire.Type == (int)villainDesireTypes.Follow){
 							newIntention = new Intention ((int)villainIntentionTypes.FollowSound, "Follow Sound", desire.SubjectObject,
 							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination),
@@ -277,6 +366,8 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		GameObject[] citizens = GameObject.FindGameObjectsWithTag ("Citizen");
 		
 		for (int i = 0; i < citizens.Length; i++) {
+			if(CitizenInRange(citizens[i]))
+			  	perceptions.Add(new Perception(citizens[i], (int) villainPerceptionTypes.Touched));
 			if(inSight(citizens[i]))
 				perceptions.Add(new Perception(citizens[i], (int)villainPerceptionTypes.Saw));
 		}
@@ -296,6 +387,20 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	}
 	
 	List<Belief> updateBeliefs(List<Belief> oldBeliefs){
+
+
+
+		foreach (Belief belief in oldBeliefs) {
+
+
+
+			if(belief.BeliefObject == null) 
+				oldBeliefs.Remove(belief);
+
+
+		}
+
+
 		List<Belief> newBeliefs = new List<Belief> (oldBeliefs);
 		List<Perception> perceptions = getCurrentPerceptions ();
 		
@@ -311,6 +416,8 @@ public class StrikerVillainBehaviour : MonoBehaviour
 					}
 				} else if (percep.Type == (int)villainPerceptionTypes.Touched && percep.Tag.Equals("Hero")){
 					newBeliefs.Add(new TouchHeroBelief(percep.ObjectPercepted));
+				} else if (percep.Type == (int)villainPerceptionTypes.Touched && percep.Tag.Equals ("Citizen")){
+					newBeliefs.Add (new TouchCitizenBelief(percep.ObjectPercepted));
 				} else if (percep.Type == (int) villainPerceptionTypes.Message){
 					newBeliefs.Add (new ConverterInDangerBelief(percep.ObjectPercepted));
 				}
@@ -329,8 +436,10 @@ public class StrikerVillainBehaviour : MonoBehaviour
 					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 1));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject) && ImmuneCitizen(belief.BeliefObject)){
 					newDesires.Add(new Desire((int)villainDesireTypes.AttackCitizen, "Attack Citizen", belief.BeliefObject, 1));
+				}else if((belief.Type == (int)villainBeliefTypes.Touching) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject) && ImmuneCitizen(belief.BeliefObject)){
+					newDesires.Add(new Desire((int)villainDesireTypes.AttackCitizen, "Attack Citizen", belief.BeliefObject, 1));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
-					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee From Hero", belief.BeliefObject, 1));
+					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight The Hero", belief.BeliefObject, 1));
 				}else if(belief.Type == (int)villainBeliefTypes.Touching){
 					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight the Hero", belief.BeliefObject, 1));
 				}else if(belief.Type == (int)villainBeliefTypes.ConverterInDanger){
@@ -425,25 +534,14 @@ public class StrikerVillainBehaviour : MonoBehaviour
 			return true;
 		} else {
 			return false;
-		}
-		
+		}	
 	}
 	
 	bool CitizenInRange(GameObject citizen)
 	{
 		float distance = Vector3.Distance (this.transform.position, citizen.transform.position);
-		return (distance <= Definitions.AOEAREA);
+		return (distance <= Definitions.MAXTOUCHINGDISTANCE);
 	}	
-	
-	bool alreadyConverted(GameObject citizen){
-		if (citizen.tag.Equals ("Citizen")) {
-			CitizenBehaviour citizenBehaviour = (CitizenBehaviour) citizen.GetComponent(typeof(CitizenBehaviour));
-			return CitizenIsEvil(citizenBehaviour);
-		} else {
-			Debug.Log("Only citizens can be converted!");
-			return false;
-		}
-	}
 
 	bool ImmuneCitizen(GameObject citizen){
 		if (citizen.tag.Equals ("Citizen")) {
@@ -451,6 +549,21 @@ public class StrikerVillainBehaviour : MonoBehaviour
 			return CitizenIsImmune (citizenBehaviour);
 		} else {
 			Debug.Log ("Only immune citizens can be attacked!");
+			return false;
+		}
+	}
+
+	bool alreadyConverted(GameObject citizen){
+
+		if (citizen == null)
+			return false;
+
+
+		if (citizen.tag.Equals ("Citizen")) {
+			CitizenBehaviour citizenBehaviour = (CitizenBehaviour) citizen.GetComponent(typeof(CitizenBehaviour));
+			return CitizenIsEvil(citizenBehaviour);
+		} else {
+			Debug.Log("Only citizens can be converted!");
 			return false;
 		}
 	}
@@ -543,22 +656,24 @@ public class StrikerVillainBehaviour : MonoBehaviour
 					damage = Random.Range(1,6);
 				else
 					damage = Random.Range(6,11);
-				heroBehaviour.Attacked(this.gameObject, "Converter", damage);
+				heroBehaviour.Attacked(this.gameObject, damage);
 			}
 			attackTime = Time.time;
+			attacking = true;
 		}
+		isRoaming = false;
 	}
 	
 	public void Attacked(int damage){
 		if (life > 0) {
 			life -= damage;
 			health.value = life;
-			Debug.Log("Darth Vader := Took " + damage + " damage!");
+			Debug.Log("Dormammu := Took " + damage + " damage!");
 		}else {
 			inCombat = false;
 			if(heroBehaviour.InCombat)
 				heroBehaviour.InCombat = false;
-			Debug.Log("I'm dead YO!!!!!!!!! - Darth Vader");
+			Debug.Log("I'm dead YO!!!!!!!!! - Dormammu");
 			anim.SetTrigger("Death");
 			isAlive=false;
 		}
@@ -575,6 +690,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		agent.SetDestination (destinationPos);
 		agent.speed = 8;
 		anim.SetBool ("isWalking", true);
+		isRoaming = false;
 		//UpdateAnimations (true, false, false, true, false);
 	}
 	
@@ -586,6 +702,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		//UpdateAnimations (true, false, false, true, false);
 		anim.SetBool ("isWalking", true);
 		time = Time.time;
+		isRoaming = true;
 	}
 	
 	void UpdateAnimations(bool walking, bool laughing, bool combat, bool alive, bool convert)

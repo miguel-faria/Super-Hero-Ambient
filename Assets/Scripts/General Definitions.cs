@@ -8,7 +8,7 @@ namespace SuperHeroAmbient{
 	enum villainPerceptionTypes {Saw, Heard, Touched, Message}
 	enum villainBeliefTypes {See, Hear, Touching, ConverterInDanger}
 	enum villainDesireTypes {Convert, Follow, DefendAgainstHero, AttackCitizen, DefendOtherVillain, Flee}
-	enum villainIntentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
+	enum villainIntentionTypes {Move, FollowSound, Approach, Attack, Convert, Flee, KillHero, AskHelp}
 	enum heroPerceptionType {Saw, Heard, Touched, SuperSpeedAvailable}
 	enum heroBeliefTypes {See, Hear, Touching, CanUseSuperSpeed}
 	enum heroDesireTypes {Save, Follow, DefendAgainstVillain, Pick, HealCrush, AvengeCrush, DefeatVillain}
@@ -216,6 +216,23 @@ namespace SuperHeroAmbient{
 			}
 			set {
 				_villainPosition = value;
+			}
+		}
+	}
+	
+	class TouchCitizenBelief : Belief {
+		Vector3 _citizenPosition;
+		
+		public TouchCitizenBelief (GameObject citizen): base((int)heroBeliefTypes.Touching, "Touch a Citizen", citizen){
+			_citizenPosition = citizen.transform.position;
+		}
+		
+		public Vector3 VillainPosition {
+			get {
+				return _citizenPosition;
+			}
+			set {
+				_citizenPosition = value;
 			}
 		}
 	}

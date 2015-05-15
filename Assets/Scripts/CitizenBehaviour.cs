@@ -9,7 +9,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	NavMeshAgent agent;
 	AnimatorStateInfo state;
 	Transform[] destinations;
-	public GameObject MagicAura;
+
 
 	int life = 3;
 	public delegate void AttackedAction(GameObject gob);
@@ -33,7 +33,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	public delegate void SeenHeroAction(Vector3 hero);
 	public static event SeenHeroAction OnVision;
 
-	int transformationState;
+	public int transformationState = 0;
 	bool heroSeen = false;
 	Vector3 heroPosition = new Vector3();
 
@@ -72,7 +72,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
 		anim.SetFloat ("Speed", 3f);
 		state = anim.GetCurrentAnimatorStateInfo (0);
-		transformationState = 0;
+		//transformationState = 0;
 	}
 	
 	// Update is called once per frame
@@ -211,13 +211,11 @@ public class CitizenBehaviour : MonoBehaviour {
 			if (transformationState < 5) {
 				transformationState++;
 				Debug.Log ("Being transformed!!! More " + (5 - transformationState) + " to become evil!");
-				if (transformationState == 5) {
+				if (transformationState == 1) {
 					//GameObject aura = GameObject.Find("ConvertionMagic");
 					//aura.SetActive(true);
-					
-					Quaternion rotation = new Quaternion ();
-					GameObject aura = (GameObject)Instantiate (MagicAura, transform.position, rotation);
-					aura.transform.SetParent (transform);
+					transform.parent.GetComponent<CitizenManager>().converted = true;
+
 				}
 				Vector3 villainDirection = GameObject.Find("ConverterVillain").transform.position - transform.position;
 				isBeingConverted=true;

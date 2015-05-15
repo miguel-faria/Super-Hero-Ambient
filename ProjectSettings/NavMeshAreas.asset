@@ -13,7 +13,7 @@ NavMeshAreas:
     cost: 2
   - name: busyArea
     cost: 2
-  - name: 
+  - name: HeroArea
     cost: 1
   - name: 
     cost: 1
