@@ -12,8 +12,8 @@ GameObject:
   - 199: {fileID: 19900000}
   - 135: {fileID: 13576812}
   m_Layer: 0
-  m_Name: HealthPickup
-  m_TagString: Untagged
+  m_Name: Health
+  m_TagString: Health
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

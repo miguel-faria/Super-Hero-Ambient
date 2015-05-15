@@ -8,6 +8,7 @@ public class GOTOscript : MonoBehaviour {
 	NavMeshAgent agent;
 	AnimatorStateInfo state;
 	Transform[] destinations;
+	Transform[] patrolDestinations;
 	float time = 0f;
 	float citizenInViewTime = float.MaxValue;
 	float attackTime = float.MaxValue;
@@ -27,6 +28,11 @@ public class GOTOscript : MonoBehaviour {
 		destinations = new Transform[objects.Length];
 		for (int i = 0; i < objects.Length; i++)
 			destinations [i] = objects [i].transform ;
+
+		objects = GameObject.FindGameObjectsWithTag("PatrolDestinations");
+		patrolDestinations = new Transform[objects.Length];
+		for (int i = 0; i < objects.Length; i++)
+			patrolDestinations[i] = objects [i].transform ;
 
 		time = Time.time;
 		agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);

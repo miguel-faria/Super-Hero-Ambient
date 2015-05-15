@@ -61,7 +61,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		//GameObject.FindGameObjectWithTag ("FxTemporaire").SetActive(false);
 		destinations = new Transform[objects.Length];
 		for (int i = 0; i < objects.Length; i++)
-			destinations [i] = objects [i].transform ;;
+			destinations [i] = objects [i].transform ;
 
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();

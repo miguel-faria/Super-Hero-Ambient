@@ -10,7 +10,11 @@ TagManager:
   - FxTemporaire
   - HUD
   - Hero
-  - PowerUP
+  - Attack
+  - Armor
+  - Health
+  - Pickups
+  - PatrolDestinations
   layers:
   - Default
   - TransparentFX

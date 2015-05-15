@@ -17,6 +17,34 @@ public class Spawning : MonoBehaviour {
 			rotation.SetLookRotation(new Vector3 (0f, Random.Range (0f, 360f), 0f));
 			Instantiate (citizen, position, rotation);
 		}
+
+		GameObject pickup;
+		GameObject[] objects = GameObject.FindGameObjectsWithTag("Pickups");
+		Transform[] pickups = new Transform[objects.Length];
+		for (int i = 0; i < objects.Length; i++)
+			pickups [i] = objects [i].transform ;
+
+		string[] names = new string[3];
+		names [0] = "ArmorSpawner";
+		names [1] = "AttackSpawner";
+		names [2] = "HealthSpawner";
+
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 4; j++){
+				int pos;
+				while(true){
+					pos = Random.Range(0, 15);
+					if(pickups[pos] != null)
+						break;
+				}
+				pickup = GameObject.Find (names[i]);
+				Quaternion rotation = new Quaternion();
+				rotation.SetLookRotation(new Vector3 (0f, 0f, 0f));
+				Instantiate (pickup, pickups[pos].transform.position, rotation);
+				pickups[pos] = null;
+			}
+
+		}
 	}
 	
 	// Update is called once per frame
