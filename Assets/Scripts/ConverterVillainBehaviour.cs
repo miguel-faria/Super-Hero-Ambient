@@ -273,7 +273,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				} else if (CitizenIsDead (citizenSc)) {
 					intention.Possible = false;
 					intention.DistanceToDestination = float.MaxValue;
-				} else if (citizenSc.IsImmune()) {
+				} else if (citizenSc.IsImmune() || citizenSc.IsSaved()) {
 					intention.Possible = false;
 					intention.DistanceToDestination = float.MaxValue;
 				} else if (((Time.time - convertTime) >= 1.0f)) {
@@ -440,7 +440,8 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			if(!alreadyInDesires(belief, newDesires)){
 				if(belief.Type == (int)villainBeliefTypes.Hear){
 					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 0.25f));
-				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject) && !AlreadyImmune (belief.BeliefObject)){
+				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject) && !AlreadyImmune (belief.BeliefObject)
+				         && !AlreadySaved (belief.BeliefObject)){
 					newDesires.Add(new Desire((int)villainDesireTypes.Convert, "Convert Citizen", belief.BeliefObject, 0.25f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
 					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee from Hero", belief.BeliefObject, 0.3f));
@@ -626,12 +627,26 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 	}
 
+	bool alreadySaved(GameObject citizen){
+		if (citizen.tag.Equals ("Citizen")) {
+			CitizenBehaviour citizenBehaviour = (CitizenBehaviour) citizen.GetComponent(typeof(CitizenBehaviour));
+			return CitizenIsSaved(citizenBehaviour);
+		} else {
+			Debug.Log("Only citizens can be converted!");
+			return false;
+		}
+	}
+
 	bool CitizenIsEvil(CitizenBehaviour citizen){
 		if (citizen.IsEvil())
 			return true;
 		else {
 			return false;
 		}
+	}
+
+	bool CitizenIsSaved(CitizenBehaviour citizen){
+		citizen.IsSaved ();
 	}
 
 	bool CitizenIsDead (CitizenBehaviour citizen)
