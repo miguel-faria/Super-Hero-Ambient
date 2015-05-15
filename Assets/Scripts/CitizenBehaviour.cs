@@ -85,19 +85,19 @@ public class CitizenBehaviour : MonoBehaviour {
 						Scream();
 						isBeingAttacked = false;
 						isBeingConverted = false;
-						Debug.Log (this + " RunningFromConversion");
+						//Debug.Log (this + " RunningFromConversion");
 						return;
 					}
 					if (seenVillain) {
 						Run (villainDirection);
 						seenVillain = false;
-						Debug.Log (this + " RunningFromVillain");
+						//Debug.Log (this + " RunningFromVillain");
 						return;
 					}
 					if (heardScream) {
 						Run (screamDirection);
 						heardScream = false;
-						Debug.Log (this + " RunningFromScream");
+						//Debug.Log (this + " RunningFromScream");
 						return;
 					}
 				} 
@@ -192,9 +192,14 @@ public class CitizenBehaviour : MonoBehaviour {
 	// O Cidadao torna-se um minion se o seu estado e' igual a 5
 	public bool IsEvil()
 	{
-		return (transformationState == 5);
+		return (transformationState == 3);
 	}
 
+
+	public bool IsSaved()
+	{
+		return (transformationState == -1);
+	}
 
 	public bool IsImmune()
 	{
@@ -208,10 +213,10 @@ public class CitizenBehaviour : MonoBehaviour {
 	public void Converted (bool success)
 	{
 		if (success && !IsImmune()) {
-			if (transformationState < 5) {
+			if (transformationState < 3) {
 				transformationState++;
-				Debug.Log ("Being transformed!!! More " + (5 - transformationState) + " to become evil!");
-				if (transformationState == 1) {
+				//Debug.Log ("Being transformed!!! More " + (3 - transformationState) + " to become evil!");
+				if (transformationState == 3) {
 					//GameObject aura = GameObject.Find("ConvertionMagic");
 					//aura.SetActive(true);
 					transform.parent.GetComponent<CitizenManager>().converted = true;
@@ -235,7 +240,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	
 	public void Saved() 
 	{
-		if (transformationState > 0 && transformationState < 5)
+		if (transformationState >= 0 && transformationState < 3)
 			transformationState--;
 	}
 	

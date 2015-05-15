@@ -19,7 +19,7 @@ public class CitizenManager : MonoBehaviour {
 
 		position = transform.GetChild (0).transform.position;
 		if (aura != null){
-			Debug.Log("Aura update");
+			//Debug.Log("Aura update");
 			aura.transform.position = position;
 	}
 		if (converted) {
@@ -33,7 +33,7 @@ public class CitizenManager : MonoBehaviour {
 
 	IEnumerator Conversion(){
 
-		Debug.Log ("conversao");
+		//Debug.Log ("conversao");
 		Quaternion rotation = new Quaternion ();
 		aura = (GameObject)Instantiate (MagicAura, transform.position, rotation);
 		aura.transform.SetParent (transform);
@@ -42,9 +42,9 @@ public class CitizenManager : MonoBehaviour {
 		Destroy (child);
 		child = (GameObject)Instantiate (convertedCitizen, position, rotation);
 		child.transform.parent = this.transform;
-		child.GetComponent<CitizenBehaviour>().transformationState = 5;
+		child.GetComponent<CitizenBehaviour>().transformationState = 3;
 		//child.GetComponent<CitizenBehaviour>.isWalking = true;
-		return true;
+		//return true;
 
 	}
 

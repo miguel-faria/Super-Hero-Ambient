@@ -19,7 +19,7 @@ namespace SuperHeroAmbient{
 		public const float FIELDOFVIEWANGLE = 110.0f; // Number of degrees, centred on forward, for the enemy see.
 		public const float VILLAINMAXVIEWDISTANCE = 30.0f;
 		public const float HEROMAXVIEWDISTANCE = 32.5f;
-		public const float MAXTOUCHINGDISTANCE = 1.5f;
+		public const float MAXTOUCHINGDISTANCE = 3.5f;
 		public const float AOEAREA = 4.0f;
 		public const float AOERUNNINGDISTANCE = 12.0f;
 		public const float HEROMAXHEARINGDISTANCE = 40.0f;

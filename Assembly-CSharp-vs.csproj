@@ -48,6 +48,7 @@
   <ItemGroup>
      <Compile Include="Assets\CameraManagerScript.cs" />
      <Compile Include="Assets\CitizenManager.cs" />
+     <Compile Include="Assets\CrushBehaviour.cs" />
      <Compile Include="Assets\JMO Assets\Cartoon FX\Demo\Assets\CFX2_Demo.cs" />
      <Compile Include="Assets\JMO Assets\Cartoon FX\Demo\Assets\CFX3_AutoStopLoopedEffect.cs" />
      <Compile Include="Assets\JMO Assets\Cartoon FX\Demo\Assets\CFX3_Demo.cs" />

@@ -19,6 +19,8 @@ public class HeroBehaviour : MonoBehaviour {
 	int convertedCitizens;
 	int life;
 	int levelDarkSide;
+	int damageBonus = 0;
+	int armorBonus = 0;
 	float lastDecisionTime;
 	float time;
 	float attackTime;
@@ -154,7 +156,7 @@ public class HeroBehaviour : MonoBehaviour {
 		if (intention != null){
 			if (saveCrush) {
 
-			} else if (screams != null) {
+			//} else if (screams != null) {
 
 			} else if(beliefs != null && desires != null && (!intention.Possible || intention.Concluded) 
 			          && noPerceptions && ((Time.time - timeLastPercep) > 5.0f)){
@@ -207,7 +209,7 @@ public class HeroBehaviour : MonoBehaviour {
 				}
 			}else if(intention.IntentObject.name.Equals("Striker Villain")) {
 				strikerVillain = (StrikerVillainBehaviour)intention.IntentObject.GetComponent(typeof(StrikerVillainBehaviour));
-				if(!strikerVillain.IsAlive){
+				if(!strikerVillain.isAlive){
 					intention.Concluded = true;
 					inCombat = false;
 					intention.DistanceToDestination = float.MaxValue;
@@ -255,7 +257,7 @@ public class HeroBehaviour : MonoBehaviour {
 				}
 			}else if(intention.IntentObject.name.Equals("Striker Villain")){
 				strikerVillain = (StrikerVillainBehaviour)intention.IntentObject.GetComponent(typeof(StrikerVillainBehaviour));
-				if(!strikerVillain.IsAlive){
+				if(!strikerVillain.isAlive){
 					intention.Concluded = true;
 					inCombat = false;
 					intention.DistanceToDestination = float.MaxValue;
@@ -287,25 +289,31 @@ public class HeroBehaviour : MonoBehaviour {
 		case (int)heroIntentionTypes.PickupPowerUp:
 			switch(intention.IntentObject.tag){
 			case "Attack":
-				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f)
+				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f){
 					CatchAttackPowerUp();
-				else{
+					Destroy (intention.IntentObject);
+					intention.Concluded = true;
+				}else{
 					followedObject = intention.IntentObject;
 					Follow(followedObject.transform.position);
 				}
 				break;
 			case "Armor":
-				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f)
+				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f){
 					CatchArmorPowerUp();
-				else{
+					Destroy (intention.IntentObject);
+					intention.Concluded = true;
+				}else{
 					followedObject = intention.IntentObject;
 					Follow(followedObject.transform.position);
 				}
 				break;
 			case "Health":
-				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f)
+				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f){
 					CatchHealthPowerUp();
-				else{
+					Destroy (intention.IntentObject);
+					intention.Concluded = true;
+				}else{
 					followedObject = intention.IntentObject;
 					Follow(followedObject.transform.position);
 				}
@@ -368,7 +376,7 @@ public class HeroBehaviour : MonoBehaviour {
 				GameObject[] villains = GameObject.FindGameObjectsWithTag("Villains");
 				float closestVillainPos = float.MaxValue;
 				float distanceToCrush = Vector3.Distance(this.transform.position, intention.IntentObject.transform.position);
-				GameObject villain;
+				GameObject villain = null;
 
 				for(int i = 0; i < villains.Length; i++){
 					float villainPos = Vector3.Distance(this.transform.position, villains[i].transform.position);
@@ -679,7 +687,7 @@ public class HeroBehaviour : MonoBehaviour {
 	}
 
 	bool CitizenInRange(GameObject citizen){
-		return Vector3.Distance (this.transform.position, citizen.transform.position) < 1.0f;
+		return Vector3.Distance (this.transform.position, citizen.transform.position) < 3.0f;
 	}
 
 	bool CitizenIsSaved(CitizenBehaviour citizen){
@@ -765,10 +773,10 @@ public class HeroBehaviour : MonoBehaviour {
 				damage = Random.Range(6,11);
 			if (attacker.gameObject.name.Equals("ConverterVillain")) {
 				convVillain = (ConverterVillainBehaviour)attacker.GetComponent (typeof(ConverterVillainBehaviour));
-				convVillain.Attacked(damage);
+				convVillain.Attacked(damage+damageBonus);
 			}else if(attacker.gameObject.name.Equals("StrikerVillain")){
 				strikeVillain = (StrikerVillainBehaviour)attacker.GetComponent (typeof(StrikerVillainBehaviour));
-				strikeVillain.Attacked(damage);
+				strikeVillain.Attacked(damage+damageBonus);
 			}
 			attackTime = Time.time;
 		}
@@ -778,6 +786,8 @@ public class HeroBehaviour : MonoBehaviour {
 		ConverterVillainBehaviour convVillain;
 		StrikerVillainBehaviour strikeVillain;
 		if (life > 0) {
+			damage -= armorBonus;
+			if(damage < 0) damage = 0;
 			life -= damage;
 			health.value = life;
 			Debug.Log("Bayamax := Took " + damage + " damage!");
@@ -801,19 +811,21 @@ public class HeroBehaviour : MonoBehaviour {
 	
 	void Follow(Vector3 destinationPos){
 		agent.Resume();
+		Debug.Log ("Gonna Stalk: " + followedObject);
 		agent.SetDestination (destinationPos);
 		if(agent.speed < 8.0f)
 			agent.speed = 8.0f;
-		anim.SetBool ("isWalking", true);
-		UpdateAnimations (true, false, false, true, false);
+		//anim.SetBool ("isWalking", true);
+		//UpdateAnimations (true, false, false, true, false);
 	}
 	
 	void RandomWalk(){
-		agent.Resume();
+		//agent.Resume();
+		Debug.Log ("Wandering Hero");
 		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
 		agent.speed = 3.5f;
-		UpdateAnimations (true, false, false, true, false);
-		anim.SetBool ("isWalking", true);
+		//UpdateAnimations (true, false, false, true, false);
+		//anim.SetBool ("isWalking", true);
 		time = Time.time;
 	}
 
@@ -827,4 +839,25 @@ public class HeroBehaviour : MonoBehaviour {
 		if (convert)
 			anim.SetTrigger ("Convert");
 	}
+
+	void CatchAttackPowerUp( ){
+
+		damageBonus += 2;
+
+	}
+
+	void CatchArmorPowerUp( ){
+		
+		armorBonus += 1;
+		
+	}
+
+	void CatchHealthPowerUp( ){
+		
+		life += 10;
+		health.value = life;
+		
+	}
+
+
 }

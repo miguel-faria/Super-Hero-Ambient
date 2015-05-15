@@ -16,7 +16,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	int convertedCitizens;
 	int remainingCitizens;
 	bool recievedMessage;
-	bool isAlive;
+	public bool isAlive;
 	bool inCombat;
 	bool isFollowing;
 	bool isRoaming = false;
