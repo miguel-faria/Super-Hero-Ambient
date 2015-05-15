@@ -9,7 +9,6 @@ public class CitizenBehaviour : MonoBehaviour {
 	NavMeshAgent agent;
 	AnimatorStateInfo state;
 	Transform[] destinations;
-	float time = 0f;
 	public GameObject MagicAura;
 
 	int life = 3;
@@ -17,13 +16,17 @@ public class CitizenBehaviour : MonoBehaviour {
 	public static event AttackedAction OnAttack;
 
 	bool immune = false;
-	bool noPerception = true;
+	
 	bool isBeingAttacked = false;
-	bool isRunningFromVillain = false;
-	bool isRunningFromScream = false;
-	bool isRunningFromConversion = false;
-	float runTime = float.MaxValue;
-	Vector3 direction = new Vector3();
+	bool isBeingConverted = false;
+	bool seenVillain = false;
+	bool heardScream = false;
+
+	float walkTime = 0f;
+	float runTime = 0f;
+	
+	Vector3 villainDirection = new Vector3();
+	Vector3 screamDirection = new Vector3();
 
 	// Evil Variables
 
@@ -61,12 +64,11 @@ public class CitizenBehaviour : MonoBehaviour {
 		//GameObject.FindGameObjectWithTag ("FxTemporaire").SetActive(false);
 		destinations = new Transform[objects.Length];
 		for (int i = 0; i < objects.Length; i++)
-			destinations [i] = objects [i].transform ;;
+			destinations [i] = objects [i].transform ;
 
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
-		
-		time = Time.time;
+
 		agent.SetDestination(destinations[Random.Range (0, destinations.Length)].position);
 		anim.SetFloat ("Speed", 3f);
 		state = anim.GetCurrentAnimatorStateInfo (0);
@@ -76,37 +78,42 @@ public class CitizenBehaviour : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!IsEvil () && Time.time - runTime >= 3f) {
-
-			if (isRunningFromConversion) {
-				Run ();
-				isRunningFromConversion = false;
-				Debug.Log("AAAAH HELPUUUUUU-DEEEES");
+			if (!IsEvil ()) {
+			if(Time.time - runTime >= 1.5f && Time.time - walkTime < 1.5f){
+					if (isBeingAttacked || isBeingConverted) {
+						Run (villainDirection);
+						Scream();
+						isBeingAttacked = false;
+						isBeingConverted = false;
+						Debug.Log (this + " RunningFromConversion");
+						return;
+					}
+					if (seenVillain) {
+						Run (villainDirection);
+						seenVillain = false;
+						Debug.Log (this + " RunningFromVillain");
+						return;
+					}
+					if (heardScream) {
+						Run (screamDirection);
+						heardScream = false;
+						Debug.Log (this + " RunningFromScream");
+						return;
+					}
+				} 
+				if(Time.time - walkTime >= 1.5f && Time.time - runTime < 1.5f) {
+					RandomWalk ();
+					return;
+				}
+			}
+			if (heroSeen) {
+				WarnVillains ();
 				return;
 			}
-			if (isRunningFromScream) {
-				StopRunning ();
-				return;
-			}
-			if (isRunningFromScream || isRunningFromVillain) {
-				Run ();
-				return;
-			}
-			if (noPerception ) {
+			if(Time.time - walkTime >= 1.5f){
 				RandomWalk ();
 				return;
 			}
-		}
-		if (heroSeen && Time.time - time >= 3f) {
-			WarnVillains ();
-			return;
-		}
-		if (noPerception && Time.time - time >= 3f) {
-			RandomWalk ();
-			return;
-		}
-		
-		
 	}
 	
 	void OnTriggerEnter (Collider other)
@@ -115,12 +122,12 @@ public class CitizenBehaviour : MonoBehaviour {
 		// If the player has entered the trigger sphere...
 		if (other.gameObject.CompareTag ("Villain") && !IsEvil ()) {
 			// Create a vector from the enemy to the player and store the angle between it and forward.
-			direction = other.transform.position - transform.position;
-			float angle = Vector3.Angle (direction, transform.forward);
+			villainDirection = other.transform.position - transform.position;
+			float angle = Vector3.Angle (villainDirection, transform.forward);
 
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
-				isRunningFromVillain = true;
+				seenVillain = true;
 				return;
 				
 			}
@@ -145,12 +152,12 @@ public class CitizenBehaviour : MonoBehaviour {
 		// If the player has entered the trigger sphere...
 		if (other.gameObject.CompareTag ("Villain") && !IsEvil ()) {
 			// Create a vector from the enemy to the player and store the angle between it and forward.
-			direction = other.transform.position - transform.position;
-			float angle = Vector3.Angle (direction, transform.forward);
+			villainDirection = other.transform.position - transform.position;
+			float angle = Vector3.Angle (villainDirection, transform.forward);
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
-				isRunningFromConversion = true;
+				seenVillain = true;
 				return;
 				
 			}
@@ -170,14 +177,11 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void OnTriggerExit(Collider other)
 	{
-		noPerception = true;
-		time = 0f;
-
-		if (isRunningFromVillain) {
-			isRunningFromVillain = false;
+		if (other.gameObject.CompareTag ("Villain")) {
+			seenVillain = false;
 			return;
 		}
-		if (heroSeen) {
+		if (other.gameObject.CompareTag ("Hero")) {
 			heroSeen = false;
 			return;
 		}
@@ -203,7 +207,7 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	public void Converted (bool success)
 	{
-		if (success) {
+		if (success && !IsImmune()) {
 			if (transformationState < 5) {
 				transformationState++;
 				Debug.Log ("Being transformed!!! More " + (5 - transformationState) + " to become evil!");
@@ -215,12 +219,10 @@ public class CitizenBehaviour : MonoBehaviour {
 					GameObject aura = (GameObject)Instantiate (MagicAura, transform.position, rotation);
 					aura.transform.SetParent (transform);
 				}
-				direction = GameObject.Find("ConverterVillain").transform.position - transform.position;
-				isRunningFromConversion=true;
+				Vector3 villainDirection = GameObject.Find("ConverterVillain").transform.position - transform.position;
+				isBeingConverted=true;
 
 			}
-			if (OnAttack != null)
-				OnAttack (this.gameObject);
 		} else {
 			immune = true;
 		}
@@ -231,8 +233,6 @@ public class CitizenBehaviour : MonoBehaviour {
 		Debug.Log ("BEING ATTACKED!!!");
 		isBeingAttacked = true;
 		life--;
-		if (OnAttack != null)
-			OnAttack (this.gameObject);
 	}
 	
 	public void Saved() 
@@ -246,9 +246,8 @@ public class CitizenBehaviour : MonoBehaviour {
 		float distance = Vector3.Distance (transform.position, citizen.transform.position);
 		// In Hearing Range
 		if (distance <= Definitions.AOERUNNINGDISTANCE && !IsEvil ()) {
-			isRunningFromScream = true;
-			runTime = Time.time;
-			direction = citizen.transform.position - transform.position;
+			heardScream = true;
+			screamDirection = citizen.transform.position - transform.position;
 		}
 	}
 
@@ -259,23 +258,19 @@ public class CitizenBehaviour : MonoBehaviour {
 	 **************************** Actuator Methods *************************
 	 ***********************************************************************/
 
-	void Run()
+	void Run(Vector3 target)
 	{
 		agent.speed = 8;
-		//Debug.Log ("AHAHASHHAAHSLDJAÇSDJÇA");
 		anim.SetFloat ("Speed", 8f);
-		agent.SetDestination(direction.normalized);
-		time = Time.time;
+		agent.SetDestination(target.normalized);
+		runTime = Time.time;
 	}
 
-	void StopRunning()
-	{
-		isRunningFromScream = false;
-		isRunningFromVillain = false;
-		noPerception = true;
-		time = float.MaxValue;
+	void Scream(){
+		if (OnAttack != null)
+			OnAttack (this.gameObject);
 	}
-
+	
 	void RandomWalk()
 	{	
 		Vector3 position = new Vector3(Random.Range(-45f,80f), 0, Random.Range(-70f, 50f));
@@ -286,7 +281,7 @@ public class CitizenBehaviour : MonoBehaviour {
 		agent.SetDestination (position);
 		agent.speed = 3.5f;
 		anim.SetFloat ("Speed", 3.5f);
-		time = Time.time;
+		walkTime = Time.time;
 	}
 
 // SPECIFIC EVIL BEHAVIOUR

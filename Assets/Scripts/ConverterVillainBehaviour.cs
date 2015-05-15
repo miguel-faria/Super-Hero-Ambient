@@ -258,6 +258,9 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				} else if (CitizenIsDead (citizenSc)) {
 					intention.Possible = false;
 					intention.DistanceToDestination = float.MaxValue;
+				} else if (citizenSc.IsImmune()) {
+					intention.Possible = false;
+					intention.DistanceToDestination = float.MaxValue;
 				} else if (((Time.time - convertTime) >= 1.0f)) {
 					if(Random.Range(1,11) > 6){
 						Debug.Log("Failed Convertion");
@@ -410,7 +413,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			if(!alreadyInDesires(belief, newDesires)){
 				if(belief.Type == (int)villainBeliefTypes.Hear){
 					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 0.25f));
-				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject)){
+				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject) && !AlreadyImmune (belief.BeliefObject)){
 					newDesires.Add(new Desire((int)villainDesireTypes.Convert, "Convert Citizen", belief.BeliefObject, 0.25f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
 					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee from Hero", belief.BeliefObject, 0.3f));
@@ -575,6 +578,16 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		float distance = Vector3.Distance (this.transform.position, citizen.transform.position);
 		return (distance <= Definitions.AOEAREA);
 	}	
+
+	bool AlreadyImmune (GameObject citizen) {
+		if (citizen.tag.Equals ("Citizen")) {
+			CitizenBehaviour citizenBehaviour = (CitizenBehaviour) citizen.GetComponent(typeof(CitizenBehaviour));
+			return citizenBehaviour.IsImmune();
+		} else {
+			Debug.Log("Only citizens can be converted!");
+			return false;
+		}
+	}
 
 	bool alreadyConverted(GameObject citizen){
 		if (citizen.tag.Equals ("Citizen")) {
