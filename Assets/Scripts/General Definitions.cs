@@ -11,7 +11,7 @@ namespace SuperHeroAmbient{
 	enum villainIntentionTypes {Move, FollowSound, Attack, Convert, Flee, KillHero, AskHelp}
 	enum heroPerceptionType {Saw, Heard, Touched, SuperSpeedAvailable}
 	enum heroBeliefTypes {See, Hear, Touching, CanUseSuperSpeed}
-	enum heroDesireTypes {Save, Follow, DefendAgainstVillain, Pick, HealCrush, AvengeCrush, DefeatVillain }
+	enum heroDesireTypes {Save, Follow, DefendAgainstVillain, Pick, HealCrush, AvengeCrush, DefeatVillain}
 	enum heroIntentionTypes {Move, FollowSound, AttackVillain, SaveCitizen, PickupPowerUp, SaveCrush, HealCrush, Revenge, KillVillain}
 
 	class Definitions{
@@ -28,6 +28,7 @@ namespace SuperHeroAmbient{
 		public const float SUPERSENSESAREA = 15.0f;
 		public const float SUPERSPEEDCOOLDOWN = 10.0f;
 		public const float SUPERSPEEDMAXTIME = 5.0f;
+		public const float MAXATTACKDISTANCE = 1.5f;
 	}
 	
 	//Utility classes
