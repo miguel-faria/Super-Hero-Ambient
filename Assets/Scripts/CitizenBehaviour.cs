@@ -21,6 +21,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	bool isBeingAttacked = false;
 	bool isRunningFromVillain = false;
 	bool isRunningFromScream = false;
+	bool isRunningFromConversion = false;
 	float runTime = float.MaxValue;
 	Vector3 direction = new Vector3();
 
@@ -75,7 +76,14 @@ public class CitizenBehaviour : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!IsEvil () && Time.time - time >= 3f) {
+		if (!IsEvil () && Time.time - runTime >= 3f) {
+
+			if (isRunningFromConversion) {
+				Run ();
+				isRunningFromConversion = false;
+				Debug.Log("AAAAH HELPUUUUUU-DEEEES");
+				return;
+			}
 			if (isRunningFromScream) {
 				StopRunning ();
 				return;
@@ -142,7 +150,7 @@ public class CitizenBehaviour : MonoBehaviour {
 			
 			// If the angle between forward and where the player is, is less than half the angle of view...
 			if (angle < Definitions.FIELDOFVIEWANGLE * 0.5f) {
-				isRunningFromVillain = true;
+				isRunningFromConversion = true;
 				return;
 				
 			}
@@ -175,11 +183,23 @@ public class CitizenBehaviour : MonoBehaviour {
 		}
 	}
 
+
+
 	// O Cidadao torna-se um minion se o seu estado e' igual a 5
 	public bool IsEvil()
 	{
 		return (transformationState == 5);
 	}
+
+
+	public bool IsImmune()
+	{
+		return immune;
+	}
+
+/***********************************************************************
+	 **************************** Sensor Methods ***************************
+	 ***********************************************************************/
 
 	public void Converted (bool success)
 	{
@@ -190,22 +210,20 @@ public class CitizenBehaviour : MonoBehaviour {
 				if (transformationState == 5) {
 					//GameObject aura = GameObject.Find("ConvertionMagic");
 					//aura.SetActive(true);
-
+					
 					Quaternion rotation = new Quaternion ();
 					GameObject aura = (GameObject)Instantiate (MagicAura, transform.position, rotation);
 					aura.transform.SetParent (transform);
 				}
+				direction = GameObject.Find("ConverterVillain").transform.position - transform.position;
+				isRunningFromConversion=true;
+
 			}
 			if (OnAttack != null)
 				OnAttack (this.gameObject);
 		} else {
 			immune = true;
 		}
-	}
-
-	public bool IsImmune()
-	{
-		return immune;
 	}
 
 	public void Attacked()
@@ -217,12 +235,37 @@ public class CitizenBehaviour : MonoBehaviour {
 			OnAttack (this.gameObject);
 	}
 	
+	public void Saved() 
+	{
+		if (transformationState > 0 && transformationState < 5)
+			transformationState--;
+	}
+	
+	void HeardScream(GameObject citizen)
+	{
+		float distance = Vector3.Distance (transform.position, citizen.transform.position);
+		// In Hearing Range
+		if (distance <= Definitions.AOERUNNINGDISTANCE && !IsEvil ()) {
+			isRunningFromScream = true;
+			runTime = Time.time;
+			direction = citizen.transform.position - transform.position;
+		}
+	}
+
+
+
+
+/***********************************************************************
+	 **************************** Actuator Methods *************************
+	 ***********************************************************************/
+
 	void Run()
 	{
 		agent.speed = 8;
 		Debug.Log ("AHAHASHHAAHSLDJAÇSDJÇA");
 		anim.SetFloat ("Speed", 8f);
 		agent.SetDestination(direction.normalized);
+		time = Time.time;
 	}
 
 	void StopRunning()
@@ -233,21 +276,8 @@ public class CitizenBehaviour : MonoBehaviour {
 		time = float.MaxValue;
 	}
 
-	void HeardScream(GameObject citizen)
-	{
-		float distance = Vector3.Distance (transform.position, citizen.transform.position);
-		// In Hearing Range
-		if (distance <= Definitions.AOERUNNINGDISTANCE && !IsEvil ()) {
-			isRunningFromScream = true;
-			runTime = Time.time;
-			direction = citizen.transform.position - transform.position;
-		}
-
-	}
-
 	void RandomWalk()
-	{
-
+	{	
 		Vector3 position = new Vector3(Random.Range(-45f,80f), 0, Random.Range(-70f, 50f));
 		NavMeshHit hit;
 		NavMesh.SamplePosition(position, out hit, 10, 1);
@@ -259,12 +289,11 @@ public class CitizenBehaviour : MonoBehaviour {
 		time = Time.time;
 	}
 
-	// SPECIFIC EVIL BEHAVIOUR
+// SPECIFIC EVIL BEHAVIOUR
 
 	void WarnVillains()
 	{
 		if (OnVision != null)
 			OnVision (heroPosition);
 	}
-
 }

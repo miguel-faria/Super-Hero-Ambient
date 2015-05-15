@@ -39,74 +39,92 @@
 	<Reference Include="System.Core" />
 	<Reference Include="System.Xml.Linq" />
 	<Reference Include="UnityEngine">
-	  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+	  <HintPath>D:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
 	</Reference>
 	<Reference Include="UnityEditor">
-	  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+	  <HintPath>D:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
 	</Reference>
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\JMO Assets\Cartoon FX Easy Editor\Editor\CFXEasyEditor.cs" />
      <Compile Include="Assets\JMO Assets\Cartoon FX\Editor\CFX_InspectorHelpEditor.cs" />
      <Compile Include="Assets\JMO Assets\Cartoon FX\Editor\CFX_SpawnSystemEditor.cs" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_eye.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_fuku.shader" />
      <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Basic.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders\CFX3 Multiply Color.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders (Mobile)\CFXM_MobileParticleAdd_Alpha8.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\CartoonFX3 Readme.txt" />
+     <None Include="Assets\UnityChan\license.txt" />
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders\CFX3 Invert.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders\CFX2 Particle Alpha Blend Add.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_fuku_ds.shader" />
      <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-BasicOutline.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_eye_blend.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX Easy Editor\CartoonFX Easy Editor Readme.txt" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_hair_ds.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_akarami_blend.shader" />
      <None Include="Assets\JMO Assets\!JMO Assets Readme.txt" />
      <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-LightedOutline.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_hair.shader" />
      <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Lighted.shader" />
+     <None Include="Assets\UnityChan\Stage\Shader\AlphaMask.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_eyelash_blend.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\Demo\Assets\CFX_Demo_WaterWiggle.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_hada.shader" />
+     <None Include="Assets\UnityChan\Models\UnityChanShader\Shader\Unitychan_chara_hada_blend.shader" />
      <None Include="Assets\ReadMe_B-Boys.txt" />
      <None Include="Assets\JMO Assets\Cartoon FX\Shaders\CFX2 Particle Alpha Blend Tint.shader" />
      <None Include="Assets\JMO Assets\Cartoon FX\CartoonFX2 Readme.txt" />
+     <None Include="Assets\Toon Particles - Magic Collection\ToonMagic - Readme.txt" />
  <Reference Include="UnityEngine.UI">
- <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.UI">
- <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/Editor/UnityEditor.UI.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/Editor/UnityEditor.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="JMOAssets">
+ <HintPath>E:/Users/Kratos/Documents/Super-Hero-Ambient/Assets/JMO Assets/Editor/JMOAssets.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.Graphs">
- <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.Graphs.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/Managed/UnityEditor.Graphs.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.Android.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/androidplayer/UnityEditor.Android.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/androidplayer/UnityEditor.Android.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.iOS.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/iossupport/UnityEditor.iOS.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/iossupport/UnityEditor.iOS.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.WP8.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/wp8support/UnityEditor.WP8.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/wp8support/UnityEditor.WP8.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.Metro.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/metrosupport/UnityEditor.Metro.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/metrosupport/UnityEditor.Metro.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.BB10.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/blackberryplayer/UnityEditor.BB10.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/blackberryplayer/UnityEditor.BB10.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.WebGL.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/webglsupport/UnityEditor.WebGL.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/webglsupport/UnityEditor.WebGL.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.LinuxStandalone.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/linuxstandalonesupport/UnityEditor.LinuxStandalone.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/linuxstandalonesupport/UnityEditor.LinuxStandalone.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.WindowsStandalone.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/windowsstandalonesupport/UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/windowsstandalonesupport/UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.OSXStandalone.Extensions">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/macstandalonesupport/UnityEditor.OSXStandalone.Extensions.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/macstandalonesupport/UnityEditor.OSXStandalone.Extensions.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.iOS.Extensions.Xcode">
- <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/iossupport/UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
+ <HintPath>D:/Program Files/Unity/Editor/Data/PlaybackEngines/iossupport/UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
  </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-UnityScript-firstpass.unityproj">
       <Project>{B75E412E-06A9-4927-D84F-3AF9FCA3F331}</Project>      <Name>Assembly-UnityScript-firstpass</Name>    </ProjectReference>
+    <ProjectReference Include="Assembly-CSharp.csproj">
+      <Project>{13C0455D-6276-78DD-9EBB-835B8C91A270}</Project>      <Name>Assembly-CSharp</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

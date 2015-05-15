@@ -27,6 +27,8 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	bool isAlive;
 	bool citizenInView = false;
 	bool updatedIntention;
+	bool procNeed = true;
+	bool converting;
 
 	GameObject followedObject;
 	GameObject hero;
@@ -139,7 +141,17 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		if (isAlive) {
+
+		StartCoroutine (UpdateBehaviour ());
+
+		//updateAnimation (intention.IntentObject);
+	}
+
+	IEnumerator UpdateBehaviour (){
+
+
+		if (isAlive && procNeed) {
+			procNeed=false;
 			remainingCitizens = int.Parse (outputRemainingCitizens.text);
 			killedCitizens = int.Parse (inputKilledCitizens.text);
 			beliefs = updateBeliefs (beliefs);
@@ -153,9 +165,14 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				executeIntention (intention);
 				lastDecisionTime = Time.time;
 			}
+			//Debug.Log ("Acessing");
+			if(converting){
+				yield return new WaitForSeconds(2);
+				converting=false;}
+			procNeed = true;
 		}
+		//Debug.Log ("Acessing");
 
-		//updateAnimation (intention.IntentObject);
 	}
 
 	/*void updateAnimation (GameObject destinationObject)
@@ -247,6 +264,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 						Convert (citizenSc, false);
 					} else{
 						Convert (citizenSc, true);
+						converting=true;
 						for (int i = 0; i < citizens.Length; i++) {
 							if ((citizens [i] != intention.IntentObject) && (CitizenInRange (citizens [i])) && 
 								(!CitizenIsEvil ((CitizenBehaviour)citizens [i].GetComponent (typeof(CitizenBehaviour))))) {
@@ -668,6 +686,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			}
 			anim.SetTrigger ("Convert");
 			agent.Stop ();
+
 			//UpdateAnimations (false, false, false, true, true);
 		}
 	}
@@ -765,5 +784,13 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		if (convert)
 			anim.SetTrigger ("Convert");
 	}
+
+	IEnumerator WaitForStuff(float waitTime) {
+		yield return new WaitForSeconds(waitTime);
+
+	}
+
 }
 
+
+ 

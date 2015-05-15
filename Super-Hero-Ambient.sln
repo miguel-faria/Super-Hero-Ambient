@@ -7,6 +7,8 @@ Project("{0BFA7124-22EB-105E-02FE-5E5FBF9C1312}") = "Super-Hero-Ambient", "Assem
 EndProject
 Project("{0BFA7124-22EB-105E-02FE-5E5FBF9C1312}") = "Super-Hero-Ambient", "Assembly-UnityScript-firstpass.unityproj", "{B75E412E-06A9-4927-D84F-3AF9FCA3F331}"
 EndProject
+Project("{0BFA7124-22EB-105E-02FE-5E5FBF9C1312}") = "Super-Hero-Ambient", "Assembly-UnityScript-Editor.unityproj", "{8BE6F1CD-9276-82D5-6CBC-BAF33E16EA89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,11 +27,15 @@ Global
 		{B75E412E-06A9-4927-D84F-3AF9FCA3F331}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B75E412E-06A9-4927-D84F-3AF9FCA3F331}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B75E412E-06A9-4927-D84F-3AF9FCA3F331}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BE6F1CD-9276-82D5-6CBC-BAF33E16EA89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BE6F1CD-9276-82D5-6CBC-BAF33E16EA89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BE6F1CD-9276-82D5-6CBC-BAF33E16EA89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BE6F1CD-9276-82D5-6CBC-BAF33E16EA89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-																																											GlobalSection(MonoDevelopProperties) = preSolution
+																																																GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Assembly-CSharp.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
