@@ -22,6 +22,7 @@ public class HeroBehaviour : MonoBehaviour {
 	float lastDecisionTime;
 	float time;
 	float attackTime;
+	float saveTime;
 	float citizenInViewTime;
 	float usedSuperSpeedTime;
 	float timeLastPercep;
@@ -44,6 +45,8 @@ public class HeroBehaviour : MonoBehaviour {
 	GameObject villain;
 	StrikerVillainBehaviour strikerVillain;
 	ConverterVillainBehaviour converterVillain;
+	CitizenBehaviour citizenSC;
+	Vector3 citizenPos = new Vector3();
 	
 	List<Belief> beliefs = new List<Belief>();
 	List<Belief> screams = new List<Belief> ();
@@ -74,6 +77,15 @@ public class HeroBehaviour : MonoBehaviour {
 		}
 		set {
 			inCombat = value;
+		}
+	}
+
+	public int LevelDarkSide {
+		get {
+			return levelDarkSide;
+		}
+		set {
+			levelDarkSide = value;
 		}
 	}
 
@@ -125,8 +137,10 @@ public class HeroBehaviour : MonoBehaviour {
 		lastDecisionTime = Time.time;
 		time = Time.time;
 		usedSuperSpeedTime = Time.time;
-		citizenInViewTime = float.MaxValue;
-		timeLastPercep = float.MaxValue;
+		citizenInViewTime = Time.time;
+		timeLastPercep = Time.time;
+		saveTime = Time.time;
+		attackTime = Time.time;
 
 	}
 	
@@ -177,7 +191,7 @@ public class HeroBehaviour : MonoBehaviour {
 
 		switch (intention.Type) {
 		case (int)heroIntentionTypes.AttackVillain:
-			if(intention.IntentObject.name.Equals("Converter Villain")){
+			if(intention.IntentObject.name.Equals("Converter Villain")) {
 				converterVillain = (ConverterVillainBehaviour)intention.IntentObject.GetComponent(typeof(ConverterVillainBehaviour));
 				if(!converterVillain.IsAlive){
 					intention.Concluded = true;
@@ -186,26 +200,193 @@ public class HeroBehaviour : MonoBehaviour {
 				} else{
 					if(VillainInAttackDistance(converterVillain.gameObject))
 						Attack(converterVillain.gameObject);
+					else{
+						followedObject = converterVillain.gameObject;
+						Follow(followedObject.transform.position);
+					}
 				}
-			}else if(intention.IntentObject.name.Equals("Striker Villain")){
+			}else if(intention.IntentObject.name.Equals("Striker Villain")) {
 				strikerVillain = (StrikerVillainBehaviour)intention.IntentObject.GetComponent(typeof(StrikerVillainBehaviour));
+				if(!strikerVillain.IsAlive){
+					intention.Concluded = true;
+					inCombat = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else{
+					if(VillainInAttackDistance(strikerVillain.gameObject))
+						Attack(strikerVillain.gameObject);
+					else{
+						followedObject = strikerVillain.gameObject;
+						Follow(followedObject.transform.position);
+					}
+				}
 			}
 			break;
 		case (int)heroIntentionTypes.FollowSound:
+			if ((intention.SoundOrigin != Vector3.zero) &&
+			    (Vector3.Distance (this.transform.position, intention.IntentObject.transform.position) == 0)){
+				intention.Concluded = true;
+				intention.DistanceToDestination = float.MaxValue;
+			}else{
+				followedObject = intention.IntentObject;
+				Follow(followedObject.transform.position);
+			}
 			break;
 		case (int)heroIntentionTypes.HealCrush:
+
 			break;
 		case (int)heroIntentionTypes.KillVillain:
+			if(intention.IntentObject.name.Equals("Converter Villain")){
+				converterVillain = (ConverterVillainBehaviour)intention.IntentObject.GetComponent(typeof(ConverterVillainBehaviour));
+				if(!converterVillain.IsAlive){
+					intention.Concluded = true;
+					inCombat = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else {
+					if(!VillainInRangeSuperSenses(converterVillain.gameObject)){
+						followedObject = converterVillain.gameObject;
+						Follow(followedObject.transform.position);
+					}else if(VillainInRangeSuperSenses(converterVillain.gameObject) && 
+					         !VillainInAttackDistance(converterVillain.gameObject) && superSpeedCharged){
+						ActivateSuperSpeed();
+						followedObject = converterVillain.gameObject;
+						Follow(followedObject.transform.position);
+					}else if(VillainInAttackDistance(converterVillain.gameObject))
+						Attack(converterVillain.gameObject);
+				}
+			}else if(intention.IntentObject.name.Equals("Striker Villain")){
+				strikerVillain = (StrikerVillainBehaviour)intention.IntentObject.GetComponent(typeof(StrikerVillainBehaviour));
+				if(!strikerVillain.IsAlive){
+					intention.Concluded = true;
+					inCombat = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else {
+					if(!VillainInRangeSuperSenses(strikerVillain.gameObject)){
+						followedObject = strikerVillain.gameObject;
+						Follow(followedObject.transform.position);
+					}else if(VillainInRangeSuperSenses(strikerVillain.gameObject) && 
+					         !VillainInAttackDistance(strikerVillain.gameObject) && superSpeedCharged){
+						ActivateSuperSpeed();
+						followedObject = strikerVillain.gameObject;
+						Follow(followedObject.transform.position);
+					}else if(VillainInAttackDistance(strikerVillain.gameObject))
+						Attack(strikerVillain.gameObject);
+				}
+			}
 			break;
 		case (int)heroIntentionTypes.Move:
+			if (desires.Count != 0){
+				intention.Possible = false;
+				intention.DistanceToDestination = float.MaxValue;
+			}else {
+				if(Time.time - time >= 5f)
+					RandomWalk();
+				if(agent.transform.position.Equals(agent.destination))
+					intention.Concluded = true;
+			}
 			break;
 		case (int)heroIntentionTypes.PickupPowerUp:
+			switch(intention.IntentObject.tag){
+			case "Attack":
+				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f)
+					CatchAttackPowerUp();
+				else{
+					followedObject = intention.IntentObject;
+					Follow(followedObject.transform.position);
+				}
+				break;
+			case "Armor":
+				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f)
+					CatchArmorPowerUp();
+				else{
+					followedObject = intention.IntentObject;
+					Follow(followedObject.transform.position);
+				}
+				break;
+			case "Health":
+				if(Vector3.Distance(this.transform.position, intention.IntentObject.transform.position) <= 0.5f)
+					CatchHealthPowerUp();
+				else{
+					followedObject = intention.IntentObject;
+					Follow(followedObject.transform.position);
+				}
+				break;
+			}
 			break;
 		case (int)heroIntentionTypes.Revenge:
+
 			break;
 		case (int)heroIntentionTypes.SaveCitizen:
+			citizenSC = (CitizenBehaviour)intention.IntentObject.GetComponent (typeof(CitizenBehaviour));
+			citizenPos = intention.IntentObject.transform.position;
+			followedObject = intention.IntentObject;
+			if(CitizenIsSaved(citizenSC)){
+				intention.Concluded = true;
+				intention.DistanceToDestination = float.MaxValue;
+			}else if (CitizenInRange (intention.IntentObject)) {
+				if (CitizenIsEvil (citizenSC)) {
+					intention.Possible = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else if (CitizenIsDead (citizenSC)) {
+					intention.Possible = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else if (((Time.time - saveTime) >= 1.0f)) {
+					Save (citizenSC);
+					saveTime = Time.time;
+				}
+			} else {
+				if (CitizenIsDead (citizenSC)) {
+					intention.Possible = false;
+					intention.DistanceToDestination = float.MaxValue;
+				} else {
+					Follow (citizenPos);
+				}
+			}
 			break;
 		case (int)heroIntentionTypes.SaveCrush:
+			CrushBehaviour crushBehaviour;
+			if(crush != null){
+				crushBehaviour = (CrushBehaviour)crush.GetComponent(typeof(CrushBehaviour));
+				citizenPos = crush.transform.position;
+			}else {
+				crushBehaviour = (CrushBehaviour)intention.IntentObject.GetComponent (typeof(CrushBehaviour));
+				citizenPos = intention.IntentObject.transform.position;
+			}
+			followedObject = intention.IntentObject;
+			if (CitizenIsEvil (crushBehaviour)) {
+				if(Random.Range(1,11) > 7){
+					Save(crushBehaviour);
+					saveTime = Time.time;
+				}
+			}else if (CitizenIsDead (crushBehaviour) && !saveCrush) {
+				intention.Possible = false;
+				intention.DistanceToDestination = float.MaxValue;
+				RevengeMode();
+			} else if(CitizenIsSaved(crushBehaviour)){
+				intention.Concluded = true;
+				intention.DistanceToDestination = float.MaxValue;
+			}else if (CitizenInRange (intention.IntentObject)) {
+				GameObject[] villains = GameObject.FindGameObjectsWithTag("Villains");
+				float closestVillainPos = float.MaxValue;
+				float distanceToCrush = Vector3.Distance(this.transform.position, intention.IntentObject.transform.position);
+				GameObject villain;
+
+				for(int i = 0; i < villains.Length; i++){
+					float villainPos = Vector3.Distance(this.transform.position, villains[i].transform.position);
+					if(villainPos < closestVillainPos){
+						villain = villains[i];
+						closestVillainPos = villainPos;
+					}
+				}
+
+				if(((Time.time - attackTime) >= 1.0f) && (closestVillainPos < distanceToCrush)){
+					Attack(villain);
+					attackTime = Time.time;
+				} else if (((Time.time - saveTime) >= 1.0f)){
+					Save (crushBehaviour);
+					saveTime = Time.time;
+				}
+			} else 
+				Follow (citizenPos);
 			break;
 		default:
 			break;
@@ -348,7 +529,9 @@ public class HeroBehaviour : MonoBehaviour {
 
 		GameObject[] citizens = GameObject.FindGameObjectsWithTag ("Citizen");
 		GameObject[] villains = GameObject.FindGameObjectsWithTag ("Villain");
-		//GameObject[] powerUPs = GameObject.FindGameObjectsWithTag ("PowerUP");
+		GameObject[] attackPowerUPs = GameObject.FindGameObjectsWithTag ("Attack");
+		GameObject[] armorPowerUPs = GameObject.FindGameObjectsWithTag ("Armor");
+		GameObject[] healthPowerUPs = GameObject.FindGameObjectsWithTag ("Health");
 
 		for (int i = 0; i < citizens.Length; i++) {
 			CitizenBehaviour citizenSC = (CitizenBehaviour)citizens[i].GetComponent(typeof (CitizenBehaviour));
@@ -363,18 +546,28 @@ public class HeroBehaviour : MonoBehaviour {
 				newPerceptions.Add(new Perception(villains[i].gameObject, (int)heroPerceptionType.Saw));
 		}
 
-		/*for (int i = 0; i < powerUPs.Length; i++) {
-			if(InSight(powerUPs[i].gameObject))
-				newPerceptions.Add(new Perception(powerUPs[i].gameObject, (int)heroPerceptionType.Saw));
-		}*/
+		for (int i = 0; i < attackPowerUPs.Length; i++) {
+			if(InSight(attackPowerUPs[i].gameObject))
+				newPerceptions.Add(new Perception(attackPowerUPs[i].gameObject, (int)heroPerceptionType.Saw));
+		}
+
+		for (int i = 0; i < armorPowerUPs.Length; i++) {
+			if(InSight(armorPowerUPs[i].gameObject))
+				newPerceptions.Add(new Perception(armorPowerUPs[i].gameObject, (int)heroPerceptionType.Saw));
+		}
+
+		for (int i = 0; i < healthPowerUPs.Length; i++) {
+			if(InSight(healthPowerUPs[i].gameObject))
+				newPerceptions.Add(new Perception(healthPowerUPs[i].gameObject, (int)heroPerceptionType.Saw));
+		}
 
 		if (!superSpeedCharged && ((Time.time - usedSuperSpeedTime) > Definitions.SUPERSPEEDCOOLDOWN))
 			newPerceptions.Add (new Perception (this.gameObject, (int)heroPerceptionType.SuperSpeedAvailable));
 
 		if (usedSuperSpeed && ((Time.time - usedSuperSpeedTime) > Definitions.SUPERSPEEDMAXTIME)) {
 			usedSuperSpeed = false;
-			agent.speed = 3.5f;
-			anim.SetFloat("Speed", 3.5f);
+			agent.speed = 8.0f;
+			anim.SetFloat("Speed", 8.0f);
 		}
 
 		return newPerceptions;
@@ -485,6 +678,22 @@ public class HeroBehaviour : MonoBehaviour {
 		return ((distance <= Definitions.MAXTOUCHINGDISTANCE) && (distance >= 0.0f));
 	}
 
+	bool CitizenInRange(GameObject citizen){
+		return Vector3.Distance (this.transform.position, citizen.transform.position) < 1.0f;
+	}
+
+	bool CitizenIsSaved(CitizenBehaviour citizen){
+		return citizen.IsSaved ();
+	}
+
+	bool CitizenIsDead(CitizenBehaviour citizen){
+		return (citizen.Life <= 0);
+	}
+
+	bool CitizenIsEvil(CitizenBehaviour citizen){
+		return citizen.IsEvil();
+	}
+
 	void HeardScream(GameObject screamer){
 		float distance = Vector3.Distance (this.transform.position, screamer.transform.position);
 		if (distance > Definitions.AOEHEARINGAREA && distance < Definitions.HEROMAXHEARINGDISTANCE) {
@@ -504,10 +713,50 @@ public class HeroBehaviour : MonoBehaviour {
 	 **************************** Actuator Methods *************************
 	 ***********************************************************************/
 
-	public void Attack(GameObject attacker){
+	void StopFollowing()
+	{
+		if (followedObject.CompareTag ("Citizen"))
+			citizenSC = null;
+		else if (followedObject.CompareTag ("Villain")) {
+			if(followedObject.name.Equals("ConverterVillain"))
+			   	converterVillain = null;
+		   else
+				strikerVillain = null;
+		}
+		followedObject = null;
+		time = float.MaxValue;
+	}
+
+	void ActivateSuperSpeed(){
+		agent.speed = 16.0f;
+		anim.SetFloat("Speed", 16.0f);
+		usedSuperSpeedTime = Time.time;
+		usedSuperSpeed = true;
+		superSpeedCharged = false;
+	}
+
+	void Save(CitizenBehaviour citizen){
+		citizen.Saved ();
+		if (citizen.IsSaved ()) {
+			remainingCitizens--;
+			outputRemainingCitizens.text = "" + remainingCitizens;
+			savedCitizens++;
+			outputSavedCitizens.text = "" + savedCitizens;
+		}
+		anim.SetTrigger ("Convert");
+		agent.Stop ();
+	}
+
+	void RevengeMode(){
+		levelDarkSide = 10;
+	}
+
+	void Attack(GameObject attacker){
 		ConverterVillainBehaviour convVillain;
 		StrikerVillainBehaviour strikeVillain;
 		int damage;
+		if (!inCombat)
+			inCombat = true;
 		if((Time.time - attackTime) >= 1.0f){
 			//TODO: update animation
 			if(Random.Range(1,11) > 6)
@@ -524,7 +773,7 @@ public class HeroBehaviour : MonoBehaviour {
 			attackTime = Time.time;
 		}
 	}
-	,
+
 	public void Attacked(GameObject attacker, int damage) {
 		ConverterVillainBehaviour convVillain;
 		StrikerVillainBehaviour strikeVillain;
@@ -544,6 +793,38 @@ public class HeroBehaviour : MonoBehaviour {
 			Debug.Log("I'm dead YO!!!!!!!!! - Hero");
 			Destroy(gameObject);
 		}
+	}
 
+	void StopAttacking(){
+		UpdateAnimations (false, false, false, true, false);
+	}
+	
+	void Follow(Vector3 destinationPos){
+		agent.Resume();
+		agent.SetDestination (destinationPos);
+		if(agent.speed < 8.0f)
+			agent.speed = 8.0f;
+		anim.SetBool ("isWalking", true);
+		UpdateAnimations (true, false, false, true, false);
+	}
+	
+	void RandomWalk(){
+		agent.Resume();
+		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
+		agent.speed = 3.5f;
+		UpdateAnimations (true, false, false, true, false);
+		anim.SetBool ("isWalking", true);
+		time = Time.time;
+	}
+
+	void UpdateAnimations(bool walking, bool laughing, bool combat, bool alive, bool convert){
+		anim.SetBool ("isWalking", walking);
+		anim.SetBool ("inCombat", combat);
+		anim.SetBool ("isAlive", alive);
+		
+		if(laughing)
+			anim.SetTrigger ("Laugh");
+		if (convert)
+			anim.SetTrigger ("Convert");
 	}
 }
