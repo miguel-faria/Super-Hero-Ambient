@@ -441,7 +441,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				if(belief.Type == (int)villainBeliefTypes.Hear){
 					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 0.25f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject) && !AlreadyImmune (belief.BeliefObject)
-				         && !AlreadySaved (belief.BeliefObject)){
+				         && !alreadySaved (belief.BeliefObject)){
 					newDesires.Add(new Desire((int)villainDesireTypes.Convert, "Convert Citizen", belief.BeliefObject, 0.25f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
 					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee from Hero", belief.BeliefObject, 0.3f));
