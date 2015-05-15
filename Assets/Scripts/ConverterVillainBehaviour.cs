@@ -233,6 +233,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		} else if (intention.Type == (int)villainIntentionTypes.Convert) {
 			citizenSc = (CitizenBehaviour)intention.IntentObject.GetComponent (typeof(CitizenBehaviour));
 			citizenPos = intention.IntentObject.transform.position;
+			followedObject = intention.IntentObject;
 			if (CitizenInRange (intention.IntentObject)) {
 				if (CitizenIsEvil (citizenSc)) {
 					intention.Concluded = true;
@@ -388,13 +389,13 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		foreach (Belief belief in beliefs) {
 			if(!alreadyInDesires(belief, newDesires)){
 				if(belief.Type == (int)villainBeliefTypes.Hear){
-					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject));
+					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 0.25f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) && !alreadyConverted(belief.BeliefObject)){
-					newDesires.Add(new Desire((int)villainDesireTypes.Convert, "Convert Citizen", belief.BeliefObject));
+					newDesires.Add(new Desire((int)villainDesireTypes.Convert, "Convert Citizen", belief.BeliefObject, 0.25f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
-					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee from Hero", belief.BeliefObject));
+					newDesires.Add(new Desire((int)villainDesireTypes.Flee, "Flee from Hero", belief.BeliefObject, 0.3f));
 				}else if(belief.Type == (int)villainBeliefTypes.Touching){
-					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight the Hero", belief.BeliefObject));
+					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight the Hero", belief.BeliefObject, 0.2f));
                	}
 			}
 		}
@@ -423,10 +424,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				                              Vector3.Distance (currentPosition, hero.transform.position));
 			} else {
 				foreach (Desire desire in desires) {
-					if (Vector3.Distance (this.transform.position, desire.ObjectiveDestination) < newIntention.DistanceToDestination) {
+					if (Vector3.Distance (this.transform.position, desire.ObjectiveDestination) * desire.PreferenceFactor < newIntention.DistanceToDestination) {
 						if (desire.Type == (int)villainDesireTypes.Convert){
 							newIntention = new Intention ((int)villainIntentionTypes.Convert, "Convert Citizen", desire.SubjectObject,
-							                             Vector3.Distance (currentPosition, desire.ObjectiveDestination));
+							                              Vector3.Distance (currentPosition, desire.ObjectiveDestination));
 							chosenDesire = desire;
 						}
 						else if (desire.Type == (int)villainDesireTypes.DefendAgainstHero){

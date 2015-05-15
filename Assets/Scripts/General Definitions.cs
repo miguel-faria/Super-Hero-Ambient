@@ -15,7 +15,7 @@ namespace SuperHeroAmbient{
 	enum heroIntentionTypes {Move, FollowSound, AttackVillain, SaveCitizen, PickupPowerUp, SaveCrush, HealCrush, Revenge, KillVillain}
 
 	class Definitions{
-		public const float TASKFOCUSTIME = 10.0f; // Time a BDI agent focus on a task
+		public const float TASKFOCUSTIME = 7.5f; // Time a BDI agent focus on a task
 		public const float FIELDOFVIEWANGLE = 110.0f; // Number of degrees, centred on forward, for the enemy see.
 		public const float VILLAINMAXVIEWDISTANCE = 30.0f;
 		public const float HEROMAXVIEWDISTANCE = 32.5f;
@@ -239,7 +239,7 @@ namespace SuperHeroAmbient{
 
 	class CanSuperSpeedBelief : Belief{
 				
-		public CanSuperSpeedBelief(GameObject crush) : base ((int)heroBeliefTypes.CanUseSuperSpeed, "Can Use Super Speed", crush){}
+		public CanSuperSpeedBelief(GameObject hero) : base ((int)heroBeliefTypes.CanUseSuperSpeed, "Can Use Super Speed", hero){}
 	}
 
 	class Desire{
@@ -248,12 +248,14 @@ namespace SuperHeroAmbient{
 		string _desireName;
 		GameObject _subjectObject;
 		Vector3 _objectiveDestination;
+		float _preferenceFactor;
 		
-		public Desire(int type, string desireName, GameObject desireObject){
+		public Desire(int type, string desireName, GameObject desireObject, float preferenceFactor){
 			_type = type;
 			_desireName = desireName;
 			_subjectObject = desireObject;
 			_objectiveDestination = desireObject.transform.position;
+			_preferenceFactor = preferenceFactor;
 		}
 		
 		public int Type {
@@ -289,6 +291,15 @@ namespace SuperHeroAmbient{
 			}
 			set {
 				_objectiveDestination = value;
+			}
+		}
+
+		public float PreferenceFactor {
+			get {
+				return _preferenceFactor;
+			}
+			set {
+				_preferenceFactor = value;
 			}
 		}
 	}

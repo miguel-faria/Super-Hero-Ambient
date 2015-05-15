@@ -23,6 +23,7 @@ public class HeroBehaviour : MonoBehaviour {
 	float attackTime;
 	float citizenInViewTime;
 	float usedSuperSpeedTime;
+	float timeLastPercep;
 	bool isFollowing;
 	bool inCombat;
 	bool isAlive;
@@ -30,6 +31,7 @@ public class HeroBehaviour : MonoBehaviour {
 	bool saveCrush;
 	bool superSpeedCharged;
 	bool usedSuperSpeed;
+	bool noPerceptions;
 	
 	Animator anim;
 	NavMeshAgent agent;
@@ -39,9 +41,9 @@ public class HeroBehaviour : MonoBehaviour {
 	GameObject followedObject;
 	GameObject crush;
 	GameObject villain;
-
-	List<Perception> screamPerceps = new List<Perception>();
+	
 	List<Belief> beliefs = new List<Belief>();
+	List<Belief> screams = new List<Belief> ();
 	List<Desire> desires = new List<Desire>();
 	Intention intention;
 
@@ -74,9 +76,6 @@ public class HeroBehaviour : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
-		Debug.Log (this.gameObject.name);
-
 		outputRemainingCitizens.text = "" + startingCitizens;
 		health.value = startingLife;
 		life = startingLife;
@@ -106,6 +105,7 @@ public class HeroBehaviour : MonoBehaviour {
 		crush = null;
 		followedObject = destinations [index].gameObject;
 		agent.SetDestination (followedObject.transform.position);
+		intention = null;
 		intention = new Intention ((int)heroIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance (this.transform.position, followedObject.transform.position));
 
@@ -114,6 +114,7 @@ public class HeroBehaviour : MonoBehaviour {
 		saveCrush = false;
 		superSpeedCharged = true;
 		usedSuperSpeed = false;
+		noPerceptions = false;
 		anim.SetBool ("isWalking", true);
 		state = anim.GetCurrentAnimatorStateInfo (0);
 
@@ -121,6 +122,8 @@ public class HeroBehaviour : MonoBehaviour {
 		time = Time.time;
 		citizenInViewTime = float.MaxValue;
 		usedSuperSpeedTime = float.MaxValue;
+		timeLastPercep = float.MaxValue;
+
 	}
 	
 	// Update is called once per frame
@@ -128,19 +131,25 @@ public class HeroBehaviour : MonoBehaviour {
 		remainingCitizens = int.Parse (outputRemainingCitizens.text);
 		killedCitizens = int.Parse (inputKilledCitizens.text);
 		convertedCitizens = int.Parse (inputConvertedCitizens.text);
-		beliefs = updateBeliefs(beliefs);
+		beliefs = updateBeliefs (beliefs);
 
-		if (saveCrush) {
+		if (intention != null){
+			if (saveCrush) {
 
-		} else {
-			if (intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)) {
-				executeIntention (intention);
+			} else if (screams != null) {
+
+			} else if(beliefs != null && noPerceptions && ((Time.time - timeLastPercep) > 5.0f)){
+
 			} else {
-				desires = updateDesires (beliefs, desires);
-				intention = updateIntention (beliefs, desires, intention);
-				updatedIntention = true;
-				executeIntention (intention);
-				lastDecisionTime = Time.time;
+				if (intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)) {
+					executeIntention (intention);
+				} else {
+					desires = updateDesires (beliefs, desires);
+					intention = updateIntention (beliefs, desires, intention);
+					updatedIntention = true;
+					executeIntention (intention);
+					lastDecisionTime = Time.time;
+				}
 			}
 		}
 	}
@@ -186,11 +195,17 @@ public class HeroBehaviour : MonoBehaviour {
 		List<Belief> newBeliefs = new List<Belief> (oldBeliefs);
 		List<Perception> perceptions = getCurrentPerceptions ();
 
+		if (perceptions == null) {
+			noPerceptions = true;
+		} else {
+			timeLastPercep = Time.time;
+		}
+
 		foreach (Perception percep in perceptions) {
 			if(!alreadyInBeliefs(percep, newBeliefs)){
-				if(percep.Type == (int)heroPerceptionType.Touched)
+				if(percep.Type == (int)heroPerceptionType.Touched){
 					newBeliefs.Add(new TouchVillainBelief(percep.ObjectPercepted));
-				else if(percep.Type == (int)heroPerceptionType.Saw){
+				} else if(percep.Type == (int)heroPerceptionType.Saw){
 					if(percep.Tag.Equals("Villain"))
 						newBeliefs.Add(new SeeVillainBelief(percep.ObjectPercepted));
 					else if(percep.Tag.Equals("Citizen")){
@@ -201,6 +216,8 @@ public class HeroBehaviour : MonoBehaviour {
 						} else
 							newBeliefs.Add(new SeeCitizenBelief(percep.ObjectPercepted));
 					}
+				} else if(percep.Type == (int)heroPerceptionType.SuperSpeedAvailable){
+					newBeliefs.Add (new CanSuperSpeedBelief(this.gameObject));
 				}
 			}
 		}
@@ -216,7 +233,8 @@ public class HeroBehaviour : MonoBehaviour {
 		//GameObject[] powerUPs = GameObject.FindGameObjectsWithTag ("PowerUP");
 
 		for (int i = 0; i < citizens.Length; i++) {
-			if(InSight(citizens[i].gameObject))
+			CitizenBehaviour citizenSC = (CitizenBehaviour)citizens[i].GetComponent(typeof (CitizenBehaviour));
+			if(InSight(citizens[i].gameObject) && ((!citizenSC.IsEvil()) || (citizens[i].name.Equals("Crush"))))
 				newPerceptions.Add(new Perception(citizens[i].gameObject, (int)heroPerceptionType.Saw));
 		}
 
@@ -339,8 +357,12 @@ public class HeroBehaviour : MonoBehaviour {
 			if((crush != null) && (screamer.name.Equals("Crush"))){
 				saveCrush = true;
 			}else{
-				screamPerceps.Add(new Perception(screamer, (int)heroPerceptionType.Heard));			
+				Perception screamPercep = new Perception(screamer, (int)heroPerceptionType.Heard);
+				if(!alreadyInBeliefs(screamPercep, screams)){
+					screams.Add(new HearScreamBelief(screamer, screamer.transform.position));
+				}
 			}
+			noPerceptions = false;
 		}
 	}
 

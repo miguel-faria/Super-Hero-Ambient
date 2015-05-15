@@ -210,7 +210,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	void Run()
 	{
 		agent.speed = 8;
-		Debug.Log ("AHAHASHHAAHSLDJAÇSDJÇA");
+		//Debug.Log (this.gameObject.name + " - AHAHASHHAAHSLDJAÇSDJÇA");
 		anim.SetFloat ("Speed", 8f);
 		agent.SetDestination(direction.normalized);
 	}
