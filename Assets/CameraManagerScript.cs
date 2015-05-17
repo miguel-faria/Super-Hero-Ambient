@@ -10,11 +10,11 @@ public class CameraManagerScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		chan = (Camera) GameObject.Find ("CameraChan").GetComponent ("Camera");
-		converter = (Camera)GameObject.Find ("CameraConverter").GetComponent ("Camera");
+		//converter = (Camera)GameObject.Find ("CameraConverter").GetComponent ("Camera");
 		hero = (Camera) GameObject.Find ("CameraHero").GetComponent ("Camera");
-		chan.enabled = true;
-		converter.enabled = false;
-		hero.enabled = false;
+		chan.enabled = false;
+		//converter.enabled = false;
+		hero.enabled = true;
 	}
 	
 	// Update is called once per frame
@@ -22,17 +22,17 @@ public class CameraManagerScript : MonoBehaviour {
 
 		if (Input.GetKeyDown(KeyCode.Alpha1)) {
 			chan.enabled = true;
-			converter.enabled = false;
+			//converter.enabled = false;
 			hero.enabled = false;
 		}
 		if (Input.GetKeyDown(KeyCode.Alpha2)) {
 			chan.enabled = false;
-			converter.enabled = true;
+			//converter.enabled = true;
 			hero.enabled = false;
 		}
 		if (Input.GetKeyDown(KeyCode.Alpha3)) {
 			chan.enabled = false;
-			converter.enabled = false;
+			//converter.enabled = false;
 			hero.enabled = true;
 		}
 

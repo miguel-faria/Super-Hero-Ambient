@@ -11,19 +11,23 @@ public class CitizenBehaviour : MonoBehaviour {
 	Transform[] destinations;
 
 
-	int life = 3;
+	int life;
 	public delegate void AttackedAction(GameObject gob);
 	public static event AttackedAction OnAttack;
+	public delegate void Death(GameObject victim, GameObject attacker);
+	public static event Death OnDeath;
 
-	bool immune = false;
+	bool immune;
 	
-	bool isBeingAttacked = false;
-	bool isBeingConverted = false;
-	bool seenVillain = false;
-	bool heardScream = false;
+	bool isBeingAttacked;
+	bool isBeingConverted;
+	bool seenVillain;
+	bool heardScream;
+	bool isAlive;
+	bool saved;
 
-	float walkTime = 0f;
-	float runTime = 0f;
+	float walkTime;
+	float runTime;
 	
 	Vector3 villainDirection = new Vector3();
 	Vector3 screamDirection = new Vector3();
@@ -33,9 +37,27 @@ public class CitizenBehaviour : MonoBehaviour {
 	public delegate void SeenHeroAction(Vector3 hero);
 	public static event SeenHeroAction OnVision;
 
-	public int transformationState = 0;
-	bool heroSeen = false;
+	public int transformationState;
+	bool heroSeen;
 	Vector3 heroPosition = new Vector3();
+
+	public bool IsAlive {
+		get {
+			return isAlive;
+		}
+		set {
+			isAlive = value;
+		}
+	}
+
+	public bool IsBeingAttacked {
+		get {
+			return isBeingAttacked;
+		}
+		set {
+			isBeingAttacked = value;
+		}
+	}
 
 	public int Life {
 		get {
@@ -60,6 +82,18 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void Start () 
 	{
+		life = 5;
+		transformationState = 0;
+		immune = false;
+		isBeingAttacked = false;
+		isBeingConverted = false;
+		seenVillain = false;
+		heardScream = false;
+		heroSeen = false;
+		saved = false;
+		isAlive = true;
+		walkTime = 0.0f;
+		runTime = 0.0f;
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		//GameObject.FindGameObjectWithTag ("FxTemporaire").SetActive(false);
 		destinations = new Transform[objects.Length];
@@ -198,7 +232,7 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	public bool IsSaved()
 	{
-		return (transformationState == -1);
+		return saved;
 	}
 
 	public bool IsImmune()
@@ -215,15 +249,14 @@ public class CitizenBehaviour : MonoBehaviour {
 		if (success && !IsImmune()) {
 			if (transformationState < 3) {
 				transformationState++;
-				//Debug.Log ("Being transformed!!! More " + (3 - transformationState) + " to become evil!");
+				Debug.Log (this.name + " - Being transformed!!! More " + (3 - transformationState) + " to become evil!");
 				if (transformationState == 3) {
-					//GameObject aura = GameObject.Find("ConvertionMagic");
 					//aura.SetActive(true);
 					transform.parent.GetComponent<CitizenManager>().converted = true;
 
 				}
 				Vector3 villainDirection = GameObject.Find("ConverterVillain").transform.position - transform.position;
-				isBeingConverted=true;
+				isBeingConverted = true;
 
 			}
 		} else {
@@ -231,17 +264,29 @@ public class CitizenBehaviour : MonoBehaviour {
 		}
 	}
 
-	public void Attacked()
+	public void Attacked(GameObject attacker)
 	{
-		Debug.Log ("BEING ATTACKED!!!");
-		isBeingAttacked = true;
-		life--;
+		if (isAlive) {
+			Debug.Log (this.name + " - BEING ATTACKED!!!");
+			isBeingAttacked = true;
+			life--;
+			if (life <= 0) {
+				isAlive = false;
+				if (this.name.Equals ("Crush") && OnDeath != null)
+					OnDeath (this.gameObject, attacker);
+			}
+		}
 	}
 	
 	public void Saved() 
 	{
-		if (transformationState >= 0 && transformationState < 3)
-			transformationState--;
+		if (!saved) {
+			Debug.Log (this.name + " - Being Saved!!! Need more " + (transformationState - 0) + " to be saved.");
+			if (transformationState >= 0 && transformationState < 3)
+				transformationState--;
+			if (transformationState < 0)
+				saved = true;
+		}
 	}
 	
 	void HeardScream(GameObject citizen)
@@ -291,6 +336,7 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	void WarnVillains()
 	{
+		Debug.Log (this.name + " - Must Warn Villains!");
 		if (OnVision != null)
 			OnVision (heroPosition);
 	}

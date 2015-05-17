@@ -135,7 +135,7 @@ public class GOTOscript : MonoBehaviour {
 		if (Time.time - attackTime >= 1f) {
 			Debug.Log ("attacking");
 			UpdateAnimations (false, false, true, true, false);
-			citizenSc.Attacked ();
+			//citizenSc.Attacked ();
 			attackTime = Time.time;
 		}
 	}

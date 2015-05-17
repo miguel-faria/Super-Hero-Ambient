@@ -16,19 +16,21 @@ namespace SuperHeroAmbient{
 
 	class Definitions{
 		public const float TASKFOCUSTIME = 7.5f; // Time a BDI agent focus on a task
+		public const float TASKFOCUSTIMEREACTIVE = 5.0f; // Time the hero does a reactive action
 		public const float FIELDOFVIEWANGLE = 110.0f; // Number of degrees, centred on forward, for the enemy see.
-		public const float VILLAINMAXVIEWDISTANCE = 30.0f;
-		public const float HEROMAXVIEWDISTANCE = 32.5f;
-		public const float MAXTOUCHINGDISTANCE = 3.5f;
+		public const float VILLAINMAXVIEWDISTANCE = 15.0f;
+		public const float HEROMAXVIEWDISTANCE = 17.5f;
+		public const float MAXTOUCHINGDISTANCE = 2.0f;
 		public const float AOEAREA = 4.0f;
 		public const float AOERUNNINGDISTANCE = 12.0f;
-		public const float HEROMAXHEARINGDISTANCE = 40.0f;
-		public const float VILLAINMAXHEARINGDISTANCE = 39.0f;
+		public const float HEROMAXHEARINGDISTANCE = 17.5f;
+		public const float VILLAINMAXHEARINGDISTANCE = 15.0f;
 		public const float AOEHEARINGAREA = 4.0f;
-		public const float SUPERSENSESAREA = 15.0f;
+		public const float SUPERSENSESAREA = 25.0f;
 		public const float SUPERSPEEDCOOLDOWN = 10.0f;
-		public const float SUPERSPEEDMAXTIME = 5.0f;
-		public const float MAXATTACKDISTANCE = 1.5f;
+		public const float SUPERSPEEDMAXTIME = 7.5f;
+		public const float MAXATTACKDISTANCE = 2.0f;
+		public const float SUPERHEARINGAREA = 25.0f;
 	}
 	
 	//Utility classes
