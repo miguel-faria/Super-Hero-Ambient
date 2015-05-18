@@ -34,6 +34,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	GameObject followedObject;
 	GameObject hero;
 	HeroBehaviour heroBehaviour;
+	StrikerVillainBehaviour strikerBehaviour;
 	Vector3 citizenPos = new Vector3();
 	GameObject[] citizens = null;
 	CitizenBehaviour citizenSc = null;
@@ -104,6 +105,12 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
 
+		GameObject[] villains = GameObject.FindGameObjectsWithTag ("Villain");
+		for (int i = 0; i < villains.Length; i++) {
+			if(villains[i].name.Equals("StrikerVillain"))
+				strikerBehaviour = (StrikerVillainBehaviour)villains[i].GetComponent(typeof(StrikerVillainBehaviour));
+		}
+
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		citizens = GameObject.FindGameObjectsWithTag ("Citizen");
 
@@ -112,17 +119,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		for (int i = 0; i < objLength; i++)
 			destinations [i] = objects [i].transform ;
 
-		float min_dist = float.MaxValue;
-		int index = 0;
-
-		for (int i = 0; i < destinations.Length; i++) {
-			if (destinations [i].position.magnitude < min_dist) {
-				index = i;
-				min_dist = destinations [i].position.magnitude;
-			}
-		}
-
-		followedObject = destinations [index].gameObject;
+		followedObject = destinations [Random.Range(1,destinations.Length)].gameObject;
 		agent.SetDestination (followedObject.transform.position);
 		intention = new Intention ((int)villainIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
@@ -202,7 +199,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		}
 
 		if (updatedIntention) {
-			Debug.Log ("Coverter Villain Executing Intention: " + intention.Description + " " + intention.IntentObject.name);
+			Debug.Log ("Coverter Villain Executing Intention: " + intention.Description);
 			updatedIntention = false;
 		}
 
@@ -309,7 +306,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				intention.DistanceToDestination = float.MaxValue;
 				StopFollowing ();
 			} else {
-				if((OnAskHelp != null) && ((Time.time - askForHelpTime) > 0.5f)){
+				if((strikerBehaviour.isAlive) && (OnAskHelp != null) && ((Time.time - askForHelpTime) > 0.5f)){
 					OnAskHelp(this.gameObject);
 					askForHelpTime = Time.time;
 				}
@@ -393,6 +390,16 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	}
 
 	List<Desire> updateDesires(List<Belief> beliefs, List<Desire> oldDesires){
+		List<Desire> emptyDesires = new List<Desire> ();
+		foreach (Desire desire in oldDesires) {
+			if(desire.SubjectObject == null) 
+				emptyDesires.Remove(desire);
+		}
+		foreach (Desire desire in emptyDesires) {
+			desires.Remove (desire);
+		}
+		emptyDesires.Clear ();
+
 		List<Desire> newDesires = new List<Desire> (oldDesires);
 
 		foreach (Belief belief in beliefs) {
@@ -415,7 +422,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 
 	Intention updateIntention(List<Belief> beliefs, List<Desire> desires, Intention oldIntention){
 		Intention newIntention;
-		if (intention.Type != (int)villainIntentionTypes.Move)
+		if (oldIntention.Type != (int)villainIntentionTypes.Move)
 			newIntention = oldIntention;
 		else {
 			newIntention = new Intention(oldIntention.Type, oldIntention.Description, oldIntention.IntentObject, float.MaxValue);
@@ -671,7 +678,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				UpdateAnimations (false, false, true, false, true, false);
 				heroBehaviour.LevelDarkSide += 1;
 			}
-			UpdateAnimations (false, false, false, false, true, true);
+			UpdateAnimations (true, false, false, false, true, true);
 			agent.Stop ();
 
 		}

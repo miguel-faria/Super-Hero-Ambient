@@ -18,7 +18,7 @@ public class Spawning : MonoBehaviour {
 			NavMesh.SamplePosition(position, out hit, 5, 1);
 			position = hit.position;
 			Quaternion rotation = new Quaternion();
-			rotation.SetLookRotation(new Vector3 (0f, Random.Range (0f, 360f), 0f));
+			rotation.SetLookRotation(new Vector3 (0f, Random.Range (1f, 361f), 0f));
 			Instantiate (citizen, position, rotation);
 		}
 

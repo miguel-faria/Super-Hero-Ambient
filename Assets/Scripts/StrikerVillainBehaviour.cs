@@ -39,6 +39,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	GameObject converter;
 	GameObject hero;
 	HeroBehaviour heroBehaviour;
+	ConverterVillainBehaviour converterBehaviour;
 	GameObject[] citizens;
 	CitizenBehaviour citizenSc;
 	GameObject followedObject;
@@ -80,7 +81,13 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		heroBehaviour = hero.GetComponent<HeroBehaviour> ();
 		anim = GetComponent<Animator> ();
 		agent = GetComponent<NavMeshAgent>();
-		
+
+		GameObject[] villains = GameObject.FindGameObjectsWithTag ("Villain");
+		for (int i = 0; i < villains.Length; i++) {
+			if(villains[i].name.Equals("ConverterVillain"))
+				converterBehaviour = (ConverterVillainBehaviour)villains[i].GetComponent(typeof(ConverterVillainBehaviour));
+		}
+
 		GameObject[] objects = GameObject.FindGameObjectsWithTag("Destination");
 		citizens = GameObject.FindGameObjectsWithTag ("Citizen");
 		
@@ -89,17 +96,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		for (int i = 0; i < objLength; i++)
 			destinations [i] = objects [i].transform ;
 		
-		float min_dist = float.MaxValue;
-		int index = 0;
-		
-		for (int i = 0; i < destinations.Length; i++) {
-			if (destinations [i].position.magnitude < min_dist) {
-				index = i;
-				min_dist = destinations [i].position.magnitude;
-			}
-		}
-		
-		followedObject = destinations [index].gameObject;
+		followedObject = destinations [Random.Range(1,destinations.Length)].gameObject;
 		agent.SetDestination (followedObject.transform.position);
 		intention = new Intention ((int)villainIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
@@ -182,7 +179,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		}
 
 		if (updatedIntention) {
-			Debug.Log ("Striker Villain Executing Intention: " + intention.Description + " " + intention.IntentObject.name);
+			Debug.Log ("Striker Villain Executing Intention: " + intention.Description);
 			updatedIntention = false;
 		}
 				
@@ -283,7 +280,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	
 	Intention updateIntention(List<Belief> beliefs, List<Desire> desires, Intention oldIntention){
 		Intention newIntention;
-		if (intention.Type != (int)villainIntentionTypes.Move)
+		if (oldIntention.Type != (int)villainIntentionTypes.Move)
 			newIntention = oldIntention;
 		else {
 			newIntention = new Intention(oldIntention.Type, oldIntention.Description, oldIntention.IntentObject, float.MaxValue);
@@ -426,17 +423,27 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	}
 	
 	List<Desire> updateDesires(List<Belief> beliefs, List<Desire> oldDesires){
+		List<Desire> emptyDesires = new List<Desire> ();
+		foreach (Desire desire in oldDesires) {
+			if(desire.SubjectObject == null) 
+				emptyDesires.Remove(desire);
+		}
+		foreach (Desire desire in emptyDesires) {
+			desires.Remove (desire);
+		}
+		emptyDesires.Clear ();
+
 		List<Desire> newDesires = new List<Desire> (oldDesires);
-		
+
 		foreach (Belief belief in beliefs) {
 			if(!alreadyInDesires(belief, newDesires) && belief.BeliefObject != null){
 				if(belief.Type == (int)villainBeliefTypes.Hear){
 					newDesires.Add(new Desire((int)villainDesireTypes.Follow, "Follow Scream", belief.BeliefObject, 0.35f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeCitizenBelief) &&
-				         !alreadyConverted(belief.BeliefObject) && ImmuneCitizen(belief.BeliefObject)){
+				         !alreadyConverted(belief.BeliefObject) && (ImmuneCitizen(belief.BeliefObject) || !converterBehaviour.IsAlive)){
 					newDesires.Add(new Desire((int)villainDesireTypes.AttackCitizen, "Attack Citizen", belief.BeliefObject, 0.2f));
 				}else if((belief.Type == (int)villainBeliefTypes.Touching) && (belief is SeeCitizenBelief) &&
-				         !alreadyConverted(belief.BeliefObject) && ImmuneCitizen(belief.BeliefObject)){
+				         !alreadyConverted(belief.BeliefObject) && (ImmuneCitizen(belief.BeliefObject) || !converterBehaviour.IsAlive)){
 					newDesires.Add(new Desire((int)villainDesireTypes.AttackCitizen, "Attack Citizen", belief.BeliefObject, 0.2f));
 				}else if((belief.Type == (int)villainBeliefTypes.See) && (belief is SeeHeroBelief)){
 					newDesires.Add(new Desire((int)villainDesireTypes.DefendAgainstHero, "Fight The Hero", belief.BeliefObject, 0.2f));

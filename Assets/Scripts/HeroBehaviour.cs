@@ -195,7 +195,6 @@ public class HeroBehaviour : MonoBehaviour {
 				executeIntention (intention);
 
 			} else if (!reactiveAction && beingAttacked) {
-				Debug.Log("I'm being Attacked by " + villainAttacker.name);
 				intention = new Intention ((int)heroIntentionTypes.AttackVillain, "Defend Against Villain", villainAttacker, 0);
 				inCombat = true;
 				reactiveAction = true;
@@ -605,12 +604,11 @@ public class HeroBehaviour : MonoBehaviour {
 
 	Intention updateIntention(List<Belief> beliefs, List<Desire> desires, Intention oldIntention){
 		Intention newIntention;
-		if (intention.Type != (int)villainIntentionTypes.Move)
+		if (oldIntention.Type != (int)villainIntentionTypes.Move)
 			newIntention = oldIntention;
 		else {
 			newIntention = new Intention(oldIntention.Type, oldIntention.Description, oldIntention.IntentObject, float.MaxValue);
 		}
-
 		
 		List<Desire> emptyDesires = new List<Desire> ();
 		foreach (Desire desire in desires) {
@@ -1054,6 +1052,7 @@ public class HeroBehaviour : MonoBehaviour {
 	}
 
 	void Save(CitizenBehaviour citizen){
+		UpdateAnimations (false, true, false, true, false);
 		citizen.Saved ();
 		if (citizen.IsSaved ()) {
 			Debug.Log("Saved Citizen");
@@ -1062,8 +1061,8 @@ public class HeroBehaviour : MonoBehaviour {
 			savedCitizens++;
 			outputSavedCitizens.text = "" + savedCitizens;
 		}
-		UpdateAnimations (false, true, false, true, false);
 		agent.Stop ();
+		UpdateAnimations (true, true, false, false, false);
 	}
 
 	void RevengeMode(){
@@ -1075,15 +1074,15 @@ public class HeroBehaviour : MonoBehaviour {
 		ConverterVillainBehaviour convVillain;
 		StrikerVillainBehaviour strikeVillain;
 		int damage;
-		Debug.Log ("Attacking " + attacked.name);
 		if (VillainInAttackDistance (attacked)) {
 			inCombat = true;
 			UpdateAnimations (false, true, true, false, false);
 		} else {
 			inCombat = false;
-			UpdateAnimations (false, true, false, false, false);
+			UpdateAnimations (true, true, false, false, false);
 		}
 		if((Time.time - attackTime) >= 1.0f){
+			Debug.Log ("Attacking " + attacked.name);
 			UpdateAnimations (false, true, true, false, true);
 			if(Random.Range(1,21) > 16)
 				damage = Random.Range(1,6) + damageBonus;
@@ -1098,7 +1097,7 @@ public class HeroBehaviour : MonoBehaviour {
 			}
 			if (VillainIsDead(attacked)){
 				inCombat = false;
-				UpdateAnimations (false, true, false, false, false);
+				UpdateAnimations (true, true, false, false, false);
 			}
 			attackTime = Time.time;
 		}
@@ -1210,5 +1209,11 @@ public class HeroBehaviour : MonoBehaviour {
 
 		agent.SetDestination (followedObject.transform.position);
 		onPatrol = true;
+	}
+
+	
+	IEnumerator WaitForStuff(float waitTime) {
+		yield return new WaitForSeconds(waitTime);
+		
 	}
 }
