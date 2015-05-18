@@ -1,12 +1,12 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\StrikerVillainBehaviour.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\HeroBehaviour.cs">
     <Files>
-      <File FileName="Assets\Scripts\ConverterVillainBehaviour.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\CitizenBehaviour.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\General Definitions.cs" Line="32" Column="45" />
-      <File FileName="Assets\Scripts\StrikerVillainBehaviour.cs" Line="268" Column="5" />
-      <File FileName="Assets\Scripts\HeroBehaviour.cs" Line="432" Column="16" />
+      <File FileName="Assets\Scripts\ConverterVillainBehaviour.cs" Line="732" Column="20" />
+      <File FileName="Assets\Scripts\CitizenBehaviour.cs" Line="266" Column="4" />
+      <File FileName="Assets\Scripts\General Definitions.cs" Line="21" Column="49" />
+      <File FileName="Assets\Scripts\StrikerVillainBehaviour.cs" Line="712" Column="20" />
+      <File FileName="Assets\Scripts\HeroBehaviour.cs" Line="570" Column="33" />
       <File FileName="Assets\Scripts\CrushBehaviour.cs" Line="1" Column="1" />
       <File FileName="Assets\CameraManagerScript.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\Spawning.cs" Line="1" Column="1" />

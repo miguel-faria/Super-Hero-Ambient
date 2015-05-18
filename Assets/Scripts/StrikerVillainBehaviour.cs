@@ -36,6 +36,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	AnimatorStateInfo state;
 	Transform[] destinations;
 
+	Vector3 lastDestination;
 	GameObject converter;
 	GameObject hero;
 	HeroBehaviour heroBehaviour;
@@ -100,6 +101,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 		agent.SetDestination (followedObject.transform.position);
 		intention = new Intention ((int)villainIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
+		lastDestination = followedObject.transform.position;
 		recievedMessage = false;
 		isFollowing = true;
 		updatedIntention = true;
@@ -146,7 +148,8 @@ public class StrikerVillainBehaviour : MonoBehaviour
 			convertedCitizens = int.Parse (inputConvertedCitizens.text);
 			beliefs = updateBeliefs(beliefs);
 			
-			if(intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
+			if((intention != null) && intention.Possible && !intention.Concluded &&
+			   ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)){
 				executeIntention(intention);
 			}
 			else {
@@ -268,7 +271,7 @@ public class StrikerVillainBehaviour : MonoBehaviour
 				intention.Possible = false;
 				intention.DistanceToDestination = float.MaxValue;
 			}else {
-				if(Time.time - time >= 5f)
+				if(Time.time - time >= 7.5f)
 					RandomWalk();
 				if(agent.transform.position.Equals(agent.destination))
 					intention.Concluded = true;
@@ -704,8 +707,10 @@ public class StrikerVillainBehaviour : MonoBehaviour
 			Debug.Log("Dormammu := Took " + damage + " damage!");
 		}else {
 			inCombat = false;
-			if(heroBehaviour.InCombat)
+			if(heroBehaviour.InCombat){
 				heroBehaviour.InCombat = false;
+				heroBehaviour.StrikerVillainDead = true;
+			}
 			Debug.Log("I'm dead YO!!!!!!!!! - Dormammu");
 			UpdateAnimations(false, false, false, false, false);
 			anim.SetTrigger("Death");
@@ -730,12 +735,16 @@ public class StrikerVillainBehaviour : MonoBehaviour
 	
 	void RandomWalk()
 	{
+		Vector3 newDestination = destinations [Random.Range (0, destinations.Length)].position;
+		while(newDestination.Equals(lastDestination))
+			newDestination = destinations [Random.Range (0, destinations.Length)].position;
 		agent.Resume();
-		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
+		agent.SetDestination (newDestination);
+		lastDestination = newDestination;
 		agent.speed = 3.5f;
+		anim.SetFloat("Speed", 3.5f);
 		UpdateAnimations (true, false, true, false, false);
 		time = Time.time;
-		isRoaming = true;
 	}
 	
 	void UpdateAnimations(bool walking, bool combat, bool alive, bool laughing, bool attacking)

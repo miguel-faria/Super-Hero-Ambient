@@ -26,11 +26,11 @@ namespace SuperHeroAmbient{
 		public const float HEROMAXHEARINGDISTANCE = 20.0f;
 		public const float VILLAINMAXHEARINGDISTANCE = 17.5f;
 		public const float AOEHEARINGAREA = 4.0f;
-		public const float SUPERSENSESAREA = 25.0f;
+		public const float SUPERSENSESAREA = 35.0f;
 		public const float SUPERSPEEDCOOLDOWN = 10.0f;
 		public const float SUPERSPEEDMAXTIME = 7.5f;
 		public const float MAXATTACKDISTANCE = 2.0f;
-		public const float SUPERHEARINGAREA = 25.0f;
+		public const float SUPERHEARINGAREA = 35.0f;
 	}
 	
 	//Utility classes
@@ -271,6 +271,35 @@ namespace SuperHeroAmbient{
 			}
 			set {
 				_crushPosition = value;
+			}
+		}
+	}
+
+	class SeePowerUPBelief : Belief {
+
+		Vector3 _powerUpPosition;
+		string _powerUpType;
+
+		public SeePowerUPBelief(GameObject powerUp) : base((int)heroBeliefTypes.See, "Saw a PowerUp", powerUp){
+			_powerUpPosition = powerUp.transform.position;
+			_powerUpType = powerUp.tag;
+		}
+
+		public Vector3 PowerUpPosition {
+			get {
+				return _powerUpPosition;
+			}
+			set {
+				_powerUpPosition = value;
+			}
+		}
+
+		public string PowerUpType {
+			get {
+				return _powerUpType;
+			}
+			set {
+				_powerUpType = value;
 			}
 		}
 	}

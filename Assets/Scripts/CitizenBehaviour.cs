@@ -226,7 +226,7 @@ public class CitizenBehaviour : MonoBehaviour {
 	// O Cidadao torna-se um minion se o seu estado e' igual a 5
 	public bool IsEvil()
 	{
-		return (transformationState == 3);
+		return (transformationState == 5);
 	}
 
 
@@ -246,21 +246,23 @@ public class CitizenBehaviour : MonoBehaviour {
 
 	public void Converted (bool success)
 	{
-		if (success && !IsImmune()) {
-			if (transformationState < 3) {
-				transformationState++;
-				Debug.Log (this.name + " - Being transformed!!! More " + (3 - transformationState) + " to become evil!");
-				if (transformationState == 3) {
-					//aura.SetActive(true);
-					transform.parent.GetComponent<CitizenManager>().converted = true;
+		if (!saved) {
+			if (success && !IsImmune ()) {
+				if (transformationState < 5) {
+					transformationState++;
+					Debug.Log (this.name + " - Being transformed!!! More " + (5 - transformationState) + " to become evil!");
+					if (transformationState == 5) {
+						//aura.SetActive(true);
+						transform.parent.GetComponent<CitizenManager> ().converted = true;
+
+					}
+					Vector3 villainDirection = GameObject.Find ("ConverterVillain").transform.position - transform.position;
+					isBeingConverted = true;
 
 				}
-				Vector3 villainDirection = GameObject.Find("ConverterVillain").transform.position - transform.position;
-				isBeingConverted = true;
-
+			} else {
+				immune = true;
 			}
-		} else {
-			immune = true;
 		}
 	}
 
@@ -281,10 +283,10 @@ public class CitizenBehaviour : MonoBehaviour {
 	public void Saved() 
 	{
 		if (!saved) {
-			Debug.Log (this.name + " - Being Saved!!! Need more " + (transformationState - 0) + " to be saved.");
-			if (transformationState >= 0 && transformationState < 3)
+			Debug.Log (this.name + " - Being Saved!!! Need more " + (transformationState - (-3)) + " to be saved.");
+			if (transformationState >= -3 && transformationState < 5)
 				transformationState--;
-			if (transformationState < 0)
+			if (transformationState <= -3)
 				saved = true;
 		}
 	}

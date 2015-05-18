@@ -36,6 +36,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	HeroBehaviour heroBehaviour;
 	StrikerVillainBehaviour strikerBehaviour;
 	Vector3 citizenPos = new Vector3();
+	Vector3 lastDestination;
 	GameObject[] citizens = null;
 	CitizenBehaviour citizenSc = null;
 
@@ -123,6 +124,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 		agent.SetDestination (followedObject.transform.position);
 		intention = new Intention ((int)villainIntentionTypes.Move, "Move Randomly", followedObject, 
 		                           Vector3.Distance(this.transform.position, followedObject.transform.position));
+		lastDestination = followedObject.transform.position;
 		isFollowing = true;
 		updatedIntention = true;
 		UpdateAnimations (true, false, false, false, true, false);
@@ -170,7 +172,8 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			killedCitizens = int.Parse (inputKilledCitizens.text);
 			beliefs = updateBeliefs (beliefs);
 			
-			if (intention.Possible && !intention.Concluded && ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)) {
+			if ((intention != null) && intention.Possible && !intention.Concluded &&
+			    ((Time.time - lastDecisionTime) < SuperHeroAmbient.Definitions.TASKFOCUSTIME)) {
 				executeIntention (intention);
 			} else {
 				desires = updateDesires (beliefs, desires);
@@ -320,7 +323,7 @@ public class ConverterVillainBehaviour : MonoBehaviour
 				intention.Possible = false;
 				intention.DistanceToDestination = float.MaxValue;
 			}else {
-				if(Time.time - time >= 5f)
+				if(Time.time - time >= 7.5f)
 					RandomWalk();
 				if(agent.transform.position.Equals(agent.destination))
 					intention.Concluded = true;
@@ -724,8 +727,10 @@ public class ConverterVillainBehaviour : MonoBehaviour
 			Debug.Log("Darth Vader := Took " + damage + " damage!");
 		}else {
 			inCombat = false;
-			if(heroBehaviour.InCombat)
+			if(heroBehaviour.InCombat){
 				heroBehaviour.InCombat = false;
+				heroBehaviour.ConverterVillainDead = true;
+			}
 			Debug.Log("I'm dead YO!!!!!!!!! - Darth Vader");
 			UpdateAnimations (false, false, false, false, false, false);
 			anim.SetTrigger("Death");
@@ -749,9 +754,12 @@ public class ConverterVillainBehaviour : MonoBehaviour
 	
 	void RandomWalk()
 	{
+		Vector3 newDestination = destinations [Random.Range (0, destinations.Length)].position;
+		while(newDestination.Equals(lastDestination))
+			newDestination = destinations [Random.Range (0, destinations.Length)].position;
 		agent.Resume();
-		agent.SetDestination (destinations [Random.Range (0, destinations.Length)].position);
-		agent.speed = 3.5f;
+		agent.SetDestination (newDestination);
+		lastDestination = newDestination;
 		UpdateAnimations (true, false ,false, false, true, false);
 		time = Time.time;
 
